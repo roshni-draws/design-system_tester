@@ -1,0 +1,731 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ANTZ Theme Tester</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0&display=block" rel="stylesheet">
+<style>
+/* ---------- Wireframe chrome: greyscale only ---------- */
+:root{
+  --wf-bg:#f4f4f4; --wf-paper:#ffffff; --wf-line:#c8c8c8; --wf-line-strong:#8a8a8a;
+  --wf-ink:#1f1f1f; --wf-ink-2:#555; --wf-ink-3:#7a7a7a; --wf-fill:#e6e6e6; --wf-fill-2:#d6d6d6;
+  --wf-callout:#1f1f1f; --wf-note:#fffbe6; --wf-note-line:#d9cf9c;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--wf-bg);color:var(--wf-ink);font:14px/1.45 Inter,system-ui,sans-serif}
+button,select,input{font:inherit;color:inherit}
+.ms{font-family:'Material Symbols Outlined';font-weight:400;font-size:20px;line-height:1;vertical-align:middle;font-feature-settings:'liga';-webkit-font-smoothing:antialiased;user-select:none}
+:focus-visible{outline:2px dashed var(--wf-ink);outline-offset:2px}
+
+/* Banner */
+.banner{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:8px 16px;background:var(--wf-ink);color:#fff;font-size:12.5px}
+.banner b{font-weight:600}
+.banner .sp{flex:1}
+.banner label{display:flex;gap:6px;align-items:center;cursor:pointer}
+
+/* Callouts */
+.co{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:var(--wf-callout);color:#fff;font:600 11px/1 Inter,sans-serif;flex:none}
+body.hide-callouts .co{display:none}
+.region{position:relative}
+.region > .co.pin{position:absolute;top:4px;left:4px;z-index:5}
+.topbar.region > .co.pin{top:2px;left:2px}
+
+/* Shell layout */
+.app{display:grid;grid-template-rows:auto 1fr;min-height:calc(100vh - 36px)}
+.topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 16px;background:var(--wf-paper);border-bottom:1px solid var(--wf-line)}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;margin-right:8px}
+.logo{width:28px;height:28px;border:1.5px solid var(--wf-ink);border-radius:6px;display:grid;place-items:center;font-size:11px;font-weight:700}
+.ctl{display:flex;align-items:center;gap:6px}
+.ctl-label{font-size:11.5px;color:var(--wf-ink-2);font-weight:500}
+.seg{display:inline-flex;border:1px solid var(--wf-line-strong);border-radius:8px;overflow:hidden;background:var(--wf-paper)}
+.seg button{border:0;background:transparent;padding:6px 11px;cursor:pointer;display:flex;align-items:center;gap:4px;min-height:32px;font-size:13px}
+.seg button + button{border-left:1px solid var(--wf-line)}
+.seg button[aria-pressed="true"]{background:var(--wf-ink);color:#fff}
+.switch{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px}
+.switch input{appearance:none;width:34px;height:20px;border-radius:10px;border:1.5px solid var(--wf-ink-2);background:var(--wf-paper);position:relative;cursor:pointer;margin:0}
+.switch input::after{content:"";position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:var(--wf-ink-2);transition:transform .15s}
+.switch input:checked{background:var(--wf-ink);border-color:var(--wf-ink)}
+.switch input:checked::after{transform:translateX(14px);background:#fff}
+.spacer{flex:1}
+.btn{border:1px solid var(--wf-line-strong);background:var(--wf-paper);border-radius:8px;padding:6px 12px;min-height:32px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:13px}
+.btn.primary{background:var(--wf-ink);color:#fff;border-color:var(--wf-ink)}
+.menu-wrap{position:relative}
+.menu{position:absolute;right:0;top:calc(100% + 6px);background:var(--wf-paper);border:1px solid var(--wf-line-strong);border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.12);min-width:230px;padding:6px;z-index:20;display:none}
+.menu.open{display:block}
+.menu button{display:flex;width:100%;text-align:left;gap:8px;align-items:center;border:0;background:none;padding:8px;border-radius:6px;cursor:pointer}
+.menu button:hover{background:var(--wf-fill)}
+.menu small{color:var(--wf-ink-3);display:block;font-size:11.5px}
+
+.body{display:grid;grid-template-columns:320px minmax(0,1fr) 280px;min-height:0}
+.panel{background:var(--wf-paper);border-right:1px solid var(--wf-line);overflow:auto;max-height:calc(100vh - 100px);position:sticky;top:0}
+.panel.right{border-right:0;border-left:1px solid var(--wf-line)}
+.panel-h{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--wf-line);position:sticky;top:0;background:var(--wf-paper);z-index:2}
+.panel-h h2{font-size:13px;margin:0;font-weight:600}
+.panel-h .sub{font-size:11.5px;color:var(--wf-ink-3);margin-left:auto}
+
+/* Role list */
+.search{margin:10px 14px;display:flex;gap:6px;align-items:center;border:1px solid var(--wf-line);border-radius:8px;padding:6px 8px;color:var(--wf-ink-3)}
+.search input{border:0;outline:0;flex:1;background:transparent;min-width:0}
+.group{border-bottom:1px solid var(--wf-line)}
+.group summary{list-style:none;cursor:pointer;padding:9px 14px;display:flex;align-items:center;gap:8px;font-weight:600;font-size:12.5px}
+.group summary::-webkit-details-marker{display:none}
+.group summary .count{margin-left:auto;color:var(--wf-ink-3);font-weight:400;font-size:11.5px}
+.group summary .ms{font-size:18px;transition:transform .15s}
+.group[open] summary .chev{transform:rotate(90deg)}
+.role{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px 14px;cursor:pointer;border-left:3px solid transparent}
+.role:hover{background:var(--wf-bg)}
+.role.hl{border-left-color:var(--wf-ink);background:var(--wf-fill)}
+.sw{width:34px;height:34px;border-radius:6px;border:1px solid rgba(0,0,0,.15);display:grid;place-items:center;font-weight:600;font-size:12px}
+.role .tk{font:500 12px/1.3 var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.role .hex{font:11.5px/1.3 var(--mono);color:var(--wf-ink-3)}
+.role .pair{font-size:11px;color:var(--wf-ink-3)}
+.badge{font:600 10.5px/1 Inter,sans-serif;padding:3px 6px;border-radius:4px;border:1px solid var(--wf-ink-2);white-space:nowrap}
+.badge.aaa{background:var(--wf-ink);color:#fff;border-color:var(--wf-ink)}
+.badge.fail{border-style:dashed;color:var(--wf-ink-3)}
+.ratio{font:11px var(--mono);color:var(--wf-ink-2);text-align:right;margin-top:2px}
+
+/* Centre */
+.centre{padding:16px 20px 24px;min-width:0;display:flex;flex-direction:column;gap:14px}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tab{border:1px solid var(--wf-line);background:var(--wf-paper);border-radius:8px;padding:6px 10px;cursor:pointer;display:flex;gap:6px;align-items:center;font-size:12.5px;min-height:32px}
+.tab[aria-selected="true"]{border-color:var(--wf-ink);box-shadow:inset 0 -3px 0 var(--wf-ink);font-weight:600}
+.tab .app-tag{font-size:10px;color:var(--wf-ink-3);border:1px solid var(--wf-line);border-radius:3px;padding:1px 4px}
+.stage{background:repeating-linear-gradient(45deg,#ececec 0 10px,#e8e8e8 10px 20px);border:1px dashed var(--wf-line-strong);border-radius:10px;padding:24px;display:flex;justify-content:center;overflow:auto;min-height:520px}
+.device{background:var(--wf-paper);border:2px solid var(--wf-ink);border-radius:10px;overflow:hidden;transition:width .2s;width:100%;max-width:1100px;display:flex;flex-direction:column}
+.device.tablet{width:768px;max-width:100%;border-radius:18px;border-width:8px}
+.device.mobile{width:375px;max-width:100%;border-radius:28px;border-width:8px}
+.device-bar{height:26px;border-bottom:1px solid var(--wf-line);display:flex;gap:5px;align-items:center;padding:0 10px;background:var(--wf-fill)}
+.device-bar i{width:9px;height:9px;border-radius:50%;border:1px solid var(--wf-line-strong)}
+.device-bar span{margin-left:10px;font:11px var(--mono);color:var(--wf-ink-3);flex:1;border:1px solid var(--wf-line);border-radius:4px;padding:1px 8px;background:var(--wf-paper)}
+.device.mobile .device-bar,.device.tablet .device-bar{justify-content:center}
+.device.mobile .device-bar i,.device.tablet .device-bar i,.device.mobile .device-bar span,.device.tablet .device-bar span{display:none}
+.device.mobile .device-bar::after,.device.tablet .device-bar::after{content:"";width:70px;height:6px;border-radius:3px;background:var(--wf-line-strong)}
+
+/* Preview screen primitives: painted with ANTZ roles via JS (data-bg / data-fg / data-bd) */
+.scr{min-height:440px;display:flex;font-size:12.5px;position:relative}
+.scr *{transition:background-color .2s,color .2s,border-color .2s}
+[data-bg],[data-fg]{cursor:pointer}
+body.inspect [data-bg]:hover,body.inspect [data-fg]:hover{outline:2px dashed #ff00aa;outline-offset:-2px}
+.sel{outline:2px solid #ff00aa !important;outline-offset:-2px}
+.wf-text{height:8px;border-radius:4px;background:currentColor;opacity:.55;display:block}
+.wf-text.t{height:11px;opacity:.85}
+.col{display:flex;flex-direction:column;gap:8px}
+.row{display:flex;gap:8px;align-items:center}
+.pill{border-radius:999px;padding:6px 14px;display:inline-flex;align-items:center;gap:6px;font-weight:500;font-size:12px}
+.card{border-radius:12px;padding:12px}
+.chip{border-radius:8px;padding:4px 10px;font-size:11.5px;border:1px solid;display:inline-flex;gap:4px;align-items:center}
+.field{border-radius:6px;border:1px solid;padding:8px 10px;font-size:11.5px;position:relative}
+.field.filled{border:0;border-bottom:1px solid;border-radius:6px 6px 0 0}
+.field .lbl{position:absolute;top:-8px;left:8px;padding:0 4px;font-size:10px}
+.nav-item{border-radius:999px;padding:7px 12px;display:flex;gap:8px;align-items:center;font-size:12px}
+table.tbl{width:100%;border-collapse:collapse;font-size:11.5px}
+.tbl th,.tbl td{padding:8px 10px;text-align:left;border-bottom:1px solid}
+.tbl th{font-weight:600}
+
+/* Mobile sample primitives */
+.statusbar{padding:6px 16px;font-size:11px;gap:2px}.statusbar .ms{font-size:14px}
+.img{background:repeating-linear-gradient(135deg,#bdbdbd 0 2px,#d9d9d9 2px 9px);border-radius:12px;display:grid;place-items:center;color:#444;font-size:10.5px;text-align:center;cursor:default}
+.img span{background:rgba(255,255,255,.75);padding:2px 6px;border-radius:4px}
+.ov{position:absolute;left:8px;bottom:8px;color:#fff;font-size:11px;text-shadow:0 1px 3px #000}
+.hero{position:relative}.hero .img{border-radius:0}.hero-txt{position:absolute;top:10px;left:14px;color:#fff;display:flex;flex-direction:column;text-shadow:0 1px 3px #000}
+.floatbar{position:sticky;bottom:12px;justify-content:center;margin-top:auto;padding:12px 0 4px}.floatbar .pill{box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.fab{position:absolute;right:14px;bottom:16px;width:46px;height:46px;border-radius:14px;display:grid;place-items:center;box-shadow:0 3px 8px rgba(0,0,0,.3)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tile{align-items:center;gap:6px;padding:12px 6px}.ic{width:36px;height:36px;border-radius:50%;display:grid;place-items:center}
+.mod{min-height:70px;display:flex;flex-direction:column;justify-content:space-between;gap:10px}
+.big{font-size:18px}.huge{font-size:26px}
+.lrow{border:1px solid;border-radius:10px;overflow:hidden;min-height:58px}
+.thumb{width:58px;align-self:stretch;display:grid;place-items:center;flex:none}.thumb .ms{font-size:28px}
+.seg-m{border-radius:10px;padding:3px;gap:2px;font-size:11.5px}.seg-m span{flex:1;text-align:center;padding:5px 0;border-radius:8px}
+.tabsm{justify-content:space-around;font-size:12px;font-weight:500}.tabsm span{flex:1;text-align:center;padding:10px 0}
+.dial-host{position:relative;flex:1;display:flex;flex-direction:column}.wash{position:absolute;inset:0;opacity:.86}
+.dial{position:absolute;right:14px;bottom:16px;gap:10px;align-items:stretch}.dial .fab{position:static}
+.mini{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.device.mobile .scr{min-height:720px}
+
+/* Screen rail + mapping panel */
+.rail{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x proximity}
+.thumbbtn{flex:0 0 112px;scroll-snap-align:start;border:1px solid var(--wf-line);background:var(--wf-paper);border-radius:8px;padding:6px;cursor:pointer;display:flex;flex-direction:column;gap:4px;align-items:stretch;text-align:left;font-size:11.5px;line-height:1.25}
+.thumbbtn .mini-ph{height:64px;border:1px solid var(--wf-line);border-radius:6px;display:grid;place-items:center;background:var(--wf-bg);color:var(--wf-ink-2)}
+.thumbbtn small{font:10px var(--mono);color:var(--wf-ink-3)}
+.thumbbtn[aria-selected="true"]{border-color:var(--wf-ink);box-shadow:inset 0 0 0 1px var(--wf-ink);font-weight:600}
+.stage-wrap{display:flex;gap:20px;align-items:flex-start;justify-content:center;flex-wrap:wrap}
+.mapping{width:300px;max-width:100%;background:var(--wf-paper);border:1px solid var(--wf-line-strong);border-radius:10px;overflow:hidden;position:relative}
+.mapping h3{margin:0;padding:10px 12px;font-size:12.5px;border-bottom:1px solid var(--wf-line);display:flex;gap:6px;align-items:center}
+.mapping h3 small{margin-left:auto;font:10.5px var(--mono);color:var(--wf-ink-3);font-weight:400}
+.maprow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 8px;padding:8px 12px;border-bottom:1px solid var(--wf-line);cursor:pointer;font-size:12px}
+.maprow:hover{background:var(--wf-bg)}.maprow.hl{background:var(--wf-fill)}
+.maprow .tok{grid-column:1 / -1;font:10.5px/1.4 var(--mono);color:var(--wf-ink-2)}
+.maprow .sws{display:flex;gap:2px}.maprow .sws i{width:14px;height:14px;border-radius:3px;border:1px solid rgba(0,0,0,.2)}
+
+/* Comparison grid */
+.compare{display:none;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+body.compare-on .compare{display:grid}
+body.compare-on .single{display:none}
+.cmp-card{background:var(--wf-paper);border:1px solid var(--wf-line-strong);border-radius:10px;overflow:hidden}
+.cmp-h{display:flex;align-items:center;gap:6px;padding:7px 10px;border-bottom:1px solid var(--wf-line);font-size:12px;font-weight:600}
+.cmp-h .sub{margin-left:auto;font-weight:400;color:var(--wf-ink-3);font:11px var(--mono)}
+.cmp-body{height:400px;overflow:hidden;position:relative;display:flex;justify-content:center;background:var(--wf-bg)}
+.cmp-body .scale{transform:scale(.55);transform-origin:50% 0;width:375px;flex:none;pointer-events:none}
+.cmp-body .scr{min-height:720px}
+.cmp-foot{display:flex;gap:4px;padding:7px 10px;border-top:1px solid var(--wf-line);font-size:11px;color:var(--wf-ink-2);flex-wrap:wrap;align-items:center}
+
+/* Inspector */
+.insp{padding:12px 14px;display:flex;flex-direction:column;gap:12px}
+.insp .empty{border:1px dashed var(--wf-line-strong);border-radius:8px;padding:14px;color:var(--wf-ink-2);font-size:12.5px;text-align:center}
+.insp h3{font-size:12px;margin:0 0 6px;color:var(--wf-ink-2);font-weight:600}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;font-size:12px}
+.kv dt{color:var(--wf-ink-3)}
+.kv dd{margin:0;font-family:var(--mono);font-size:11.5px}
+.mode-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.mode-strip div{border-radius:4px;height:30px;display:grid;place-items:center;font-size:9.5px;font-weight:600;border:1px solid rgba(0,0,0,.12)}
+.code{background:var(--wf-bg);border:1px solid var(--wf-line);border-radius:6px;padding:8px;font:11px/1.5 var(--mono);white-space:pre-wrap;word-break:break-all}
+
+/* Notes */
+.note{background:var(--wf-note);border:1px solid var(--wf-note-line);border-radius:8px;padding:10px 12px;font-size:12.5px;display:flex;gap:8px;align-items:flex-start}
+.phase2{border:2px dashed var(--wf-line-strong);border-radius:10px;padding:14px;display:flex;gap:14px;align-items:center;background:var(--wf-paper);flex-wrap:wrap}
+.phase2 .drop{flex:1;min-width:220px;border:1px dashed var(--wf-line-strong);border-radius:8px;padding:14px;text-align:center;color:var(--wf-ink-3)}
+.tag{font:600 10px/1 Inter,sans-serif;letter-spacing:.02em;border:1px solid var(--wf-ink);border-radius:4px;padding:3px 6px}
+
+.annotations{background:var(--wf-paper);border-top:1px solid var(--wf-line);padding:24px 20px 40px}
+.annotations h2{font-size:16px;margin:0 0 4px}
+.annotations > p{margin:0 0 18px;color:var(--wf-ink-2);max-width:80ch}
+.ann-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px 24px}
+.ann{display:flex;gap:10px;align-items:flex-start;font-size:13px}
+.ann b{display:block;margin-bottom:2px}
+.ann p{margin:0;color:var(--wf-ink-2)}
+.qs{margin-top:28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}
+.qs section{border:1px solid var(--wf-line);border-radius:10px;padding:14px 16px}
+.qs h3{margin:0 0 8px;font-size:14px}
+.qs ol,.qs ul{margin:0;padding-left:20px;color:var(--wf-ink-2)}
+.qs li{margin:5px 0}
+code{font-family:var(--mono);font-size:.92em}
+
+/* Responsive */
+@media (max-width:1280px){ .body{grid-template-columns:290px minmax(0,1fr)} .panel.right{grid-column:1 / -1;border-left:0;border-top:1px solid var(--wf-line);position:static;max-height:none} .compare{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:900px){ .body{grid-template-columns:1fr} .panel{position:static;max-height:420px;border-right:0;border-bottom:1px solid var(--wf-line)} .compare{grid-template-columns:1fr} .stage{padding:12px} }
+@media (prefers-reduced-motion:reduce){ *{transition:none !important} }
+</style>
+</head>
+<body class="inspect">
+
+<div class="banner" role="note">
+  <span class="ms" aria-hidden="true">draft</span>
+  <span><b>Wireframe v0.1</b> · ANTZ Theme Tester · low fidelity. Chrome is greyscale on purpose; only swatches and the preview canvas use real ANTZ role values.</span>
+  <span class="sp"></span>
+  <label><input type="checkbox" id="tglCallouts" checked> Show numbered callouts</label>
+  <label><input type="checkbox" id="tglPaint" checked> Paint preview with ANTZ colours</label>
+</div>
+
+<div class="app">
+  <!-- 1 TOP BAR -->
+  <header class="topbar region" aria-label="Theme controls">
+    <span class="co pin">1</span>
+    <div class="brand"><span class="logo">AZ</span>ANTZ Theme Tester <span class="tag" title="Token source version">tokens · 2026-10-27</span></div>
+
+    <div class="ctl"><span class="co">2</span><span class="ctl-label" id="lblMode">Mode</span>
+      <div class="seg" role="group" aria-labelledby="lblMode" id="segMode">
+        <button aria-pressed="true" data-mode="light"><span class="ms" aria-hidden="true">light_mode</span>Light</button>
+        <button aria-pressed="false" data-mode="dark"><span class="ms" aria-hidden="true">dark_mode</span>Dark</button>
+      </div>
+    </div>
+
+    <div class="ctl"><span class="co">3</span><span class="ctl-label" id="lblContrast">Contrast</span>
+      <div class="seg" role="group" aria-labelledby="lblContrast" id="segContrast">
+        <button aria-pressed="true" data-contrast="">Standard</button>
+        <button aria-pressed="false" data-contrast="medium">Medium</button>
+        <button aria-pressed="false" data-contrast="high">High</button>
+      </div>
+    </div>
+
+    <div class="ctl"><span class="co">4</span>
+      <label class="switch"><input type="checkbox" id="tglCompare"> All 6 modes side by side</label>
+    </div>
+
+    <span class="spacer"></span>
+
+    <div class="ctl"><span class="co">5</span>
+      <div class="menu-wrap">
+        <button class="btn primary" id="btnExport" aria-haspopup="true" aria-expanded="false"><span class="ms" aria-hidden="true">download</span>Export tokens</button>
+        <div class="menu" id="menuExport" role="menu">
+          <button role="menuitem"><span class="ms">css</span><span>CSS variables<small>tokens.css · --md-sys-color-*</small></span></button>
+          <button role="menuitem"><span class="ms">air</span><span>Tailwind v3 / v4<small>config snippet or @theme block</small></span></button>
+          <button role="menuitem"><span class="ms">data_object</span><span>JSON<small>Material Theme Builder format</small></span></button>
+          <button role="menuitem"><span class="ms">flutter</span><span>Flutter<small>antz_color_scheme.dart</small></span></button>
+          <button role="menuitem"><span class="ms">deployed_code</span><span>MUI / shadcn<small>theme files from the ANTZ skill</small></span></button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="body">
+    <!-- 6 LEFT: ROLE LIST -->
+    <aside class="panel region" aria-label="ANTZ colour roles">
+      <span class="co pin">6</span>
+      <div class="panel-h"><span class="ms" aria-hidden="true">palette</span><h2>ANTZ colour roles</h2><span class="sub" id="schemeName">light</span></div>
+      <div class="search"><span class="ms" aria-hidden="true">search</span><input id="roleSearch" placeholder="Filter roles, e.g. container" aria-label="Filter roles"><span class="co">7</span></div>
+      <div id="roleGroups"></div>
+      <div style="padding:12px 14px"><div class="note"><span class="co">8</span><span>Read-only. Swatches cannot be edited and there is no seed picker. Click a role to highlight every element in the preview that uses it.</span></div></div>
+    </aside>
+
+    <!-- CENTRE -->
+    <main class="centre">
+      <div class="toolbar">
+        <b style="font-size:13px">Screens from the ANTZ mobile app</b><span style="font-size:12px;color:var(--wf-ink-3)">12 real samples · iPhone</span>
+        <span class="spacer"></span>
+        <span class="co">10</span>
+        <div class="seg" role="group" aria-label="Device frame" id="segDevice">
+          <button aria-pressed="false" data-device="desktop" title="Desktop 1280"><span class="ms" aria-hidden="true">desktop_windows</span>Desktop</button>
+          <button aria-pressed="false" data-device="tablet" title="Tablet 768"><span class="ms" aria-hidden="true">tablet</span>Tablet</button>
+          <button aria-pressed="true" data-device="mobile" title="Mobile 375"><span class="ms" aria-hidden="true">smartphone</span>Mobile</button>
+        </div>
+      </div>
+
+      <div class="rail region" role="tablist" aria-label="Application screens" id="tabs"></div>
+
+      <!-- 11 SINGLE PREVIEW -->
+      <section class="single region" aria-label="Preview">
+        <span class="co pin">11</span>
+        <div class="stage"><div class="stage-wrap"><div class="device" id="device"><div class="device-bar"><i></i><i></i><i></i><span id="urlbar">antzapp://home</span></div><div id="screenHost"></div></div>
+          <aside class="mapping region" aria-label="Role mapping for this screen"><span class="co pin">15</span><h3><span class="ms" aria-hidden="true">account_tree</span>Proposed role mapping<small id="mapFile"></small></h3><div id="mapRows"></div></aside></div></div>
+      </section>
+
+      <!-- 12 COMPARE GRID -->
+      <section class="compare region" id="compare" aria-label="All modes comparison"><span class="co pin">12</span></section>
+
+      <!-- 14 PHASE 2 -->
+      <section class="phase2 region" aria-label="Phase 2 idea">
+        <span class="co pin">14</span>
+        <span class="tag">PHASE 2 · IDEA</span>
+        <div class="drop"><span class="ms" aria-hidden="true">upload</span> Drop a screenshot of your app<br><small>auto-map its colours to the nearest ANTZ roles</small></div>
+        <div class="drop"><span class="ms" aria-hidden="true">link</span> Paste your app URL<br><small>inject tokens.css via bookmarklet / extension</small></div>
+      </section>
+    </main>
+
+    <!-- 13 RIGHT: INSPECTOR -->
+    <aside class="panel right region" aria-label="Inspector">
+      <span class="co pin">13</span>
+      <div class="panel-h"><span class="ms" aria-hidden="true">frame_inspect</span><h2>Inspector</h2><span class="sub">click any element</span></div>
+      <div class="insp" id="insp"><div class="empty"><span class="ms" aria-hidden="true">ads_click</span><br>Click an element in the preview to see which ANTZ role tokens it uses, their values in all 6 modes and the contrast of the pair.</div></div>
+    </aside>
+  </div>
+</div>
+
+<!-- ANNOTATIONS + OPEN QUESTIONS -->
+<footer class="annotations">
+  <h2>Annotations</h2>
+  <p>Numbers match the black callouts above. This page is a clickable wireframe: mode, contrast, compare, screen tabs, device frames, role filter, role highlight and the inspector all work, so you can try the flow before anything is designed.</p>
+  <div class="ann-grid">
+    <div class="ann"><span class="co">1</span><div><b>Top bar</b><p>Global controls only. Stays fixed so mode can be flipped while scrolling any screen. Shows which token export version is loaded.</p></div></div>
+    <div class="ann"><span class="co">2</span><div><b>Light / Dark</b><p>Segmented toggle (not an icon-only button) so the current state is always readable. Keyboard: Tab then arrow keys.</p></div></div>
+    <div class="ann"><span class="co">3</span><div><b>Contrast level</b><p>Standard / Medium / High. Combined with (2) this selects one of the 6 ANTZ schemes. Default follows the OS (<code>prefers-color-scheme</code>, <code>prefers-contrast</code>).</p></div></div>
+    <div class="ann"><span class="co">4</span><div><b>All modes side by side</b><p>Replaces the single preview with a 3 × 2 grid of the current screen in all 6 schemes (12). Mode and contrast controls are then disabled.</p></div></div>
+    <div class="ann"><span class="co">5</span><div><b>Export</b><p>Downloads the same files the ANTZ skill already ships (CSS vars, Tailwind, JSON, Flutter, MUI/shadcn). Export is always all 6 modes, never just the one on screen.</p></div></div>
+    <div class="ann"><span class="co">6</span><div><b>Role list</b><p>Every M3 role grouped by family. Each row: swatch, token name, hex, the on-colour it pairs with, contrast ratio and AA / AAA badge. Values update with (2) and (3).</p></div></div>
+    <div class="ann"><span class="co">7</span><div><b>Filter</b><p>Type to narrow roles (e.g. "container", "fixed"). Also a "failing only" filter later, if any pair ever drops below AA.</p></div></div>
+    <div class="ann"><span class="co">8</span><div><b>Read-only by design</b><p>Unlike Material Theme Builder there is no seed or custom colour. The palette is fixed to ANTZ; the tool is for checking, not choosing.</p></div></div>
+    <div class="ann"><span class="co">9</span><div><b>Screen rail</b><p>One thumbnail per real sample in <code>Design System Previewer/screen samples</code> (12 iPhone screenshots of the ANTZ mobile app), named after the screen and labelled with its file. In the real app the thumbnails are live mini-renders.</p></div></div>
+    <div class="ann"><span class="co">10</span><div><b>Device frame</b><p>Defaults to Mobile 375 because every sample is a phone screen. Tablet / Desktop only stretch the same layout until we have web dashboard samples (see open questions).</p></div></div>
+    <div class="ann"><span class="co">11</span><div><b>Live preview</b><p>Wireframe recreation of the selected sample, painted only with ANTZ role tokens (photos stay as hatched placeholders). Hover outlines what is clickable; click to inspect (13); clicking a role in (6) highlights where it is used.</p></div></div>
+    <div class="ann"><span class="co">12</span><div><b>Comparison grid</b><p>Same screen, all 6 schemes, at half scale. Footer of each card shows how many key pairs pass AA. Click a card to open it full size in that mode.</p></div></div>
+    <div class="ann"><span class="co">13</span><div><b>Inspector</b><p>For the clicked element: background, text and border roles, hex in the current mode, a strip of the same role in all 6 modes, contrast of the pair and a copyable CSS snippet.</p></div></div>
+    <div class="ann"><span class="co">15</span><div><b>Proposed role mapping</b><p>For each region of the sample: which ANTZ role it would use, with live swatches for the current mode. Click a row to highlight that region in the preview. "Today" notes describe the colour in the screenshot. This is the list to approve before the high-fidelity phase.</p></div></div>
+    <div class="ann"><span class="co">14</span><div><b>Phase 2: your real app</b><p>Iframing our live apps will likely be blocked by <code>X-Frame-Options</code> / CSP and needs logins. Safer options: screenshot colour-mapping, or a bookmarklet / browser extension that injects <code>tokens.css</code> into the real page.</p></div></div>
+  </div>
+
+  <div class="qs">
+    <section>
+      <h3>Open questions</h3>
+      <ol>
+        <li>Are the proposed role mappings (15) right? Main judgement calls: navy banners and selected chips as <code>tertiary</code> / <code>inverse-surface</code>, module gradient tiles flattened to primary / tertiary containers, peach "Pending" as <code>error-container</code>.</li>
+        <li>All 12 samples are mobile. Do we also need web dashboard screens (pharmacy, lab, login) for the desktop frame?</li>
+        <li>Module tiles and photos use gradients and imagery today. Keep the 5 Figma module gradients, or move tiles to flat ANTZ containers?</li>
+        <li>The speed-dial menus (IMG_1606, IMG_1611) use a white wash; M3 uses a 32% scrim. Which should the tester show? The 11-item Medical menu is also long for a speed dial.</li>
+        <li>Which token set is the source of truth? The Figma "ANTZ Colour" library of 3 Nov (65 roles, navy tertiary #1F415B, error #E93353, extended Success / Warning / Caution / Info) is newer than the files on disk (49 roles, 27 Oct export). This wireframe shows the on-disk values.</li>
+        <li>Extended colours are used heavily (Alert for the audit ticker and "in progress", Warning for the "F" badge). Should they become mode-aware roles? On disk they are single fixed hexes, so they do not change between modes in this wireframe.</li>
+        <li>Do we want the Phase 2 "test my real app" mode, and if so screenshot mapping or a token-injection extension?</li>
+        <li>Who uses this: designers only, or developers too? That decides whether Export and code snippets are prominent or tucked away.</li>
+        <li>Hosting: internal static page, or part of the web dashboard behind login?</li>
+      </ol>
+    </section>
+    <section>
+      <h3>Legend</h3>
+      <ul>
+        <li><span class="co">n</span> numbered callout, explained above</li>
+        <li><span class="badge aaa">AAA</span> pair is 7:1 or more · <span class="badge">AA</span> 4.5:1 or more · <span class="badge">AA large</span> 3:1 or more (non-text / large text) · <span class="badge fail">Fail</span> below 3:1</li>
+        <li>Grey boxes and bars are placeholder content, not final copy or layout.</li>
+        <li>Pink outline in the preview marks the element being inspected or a highlighted role.</li>
+        <li>Out of scope for v1: state layers, typography, shape and elevation tokens (not yet defined in ANTZ).</li>
+      </ul>
+    </section>
+  </div>
+</footer>
+
+<script>
+const ANTZ = {"schemes":{"light":{"primary":"#326941","surfaceTint":"#326941","onPrimary":"#FFFFFF","primaryContainer":"#B4F1BE","onPrimaryContainer":"#17512B","secondary":"#006A61","onSecondary":"#FFFFFF","secondaryContainer":"#9EF2E5","onSecondaryContainer":"#005049","tertiary":"#236488","onTertiary":"#FFFFFF","tertiaryContainer":"#C8E6FF","onTertiaryContainer":"#004C6D","error":"#8F4A4F","onError":"#FFFFFF","errorContainer":"#FFDADA","onErrorContainer":"#723338","background":"#F6FBF3","onBackground":"#181D18","surface":"#F4FBF9","onSurface":"#161D1C","surfaceVariant":"#DBE5DE","onSurfaceVariant":"#404944","outline":"#707973","outlineVariant":"#BFC9C2","shadow":"#000000","scrim":"#000000","inverseSurface":"#2B3231","inverseOnSurface":"#ECF2F0","inversePrimary":"#99D4A3","primaryFixed":"#B4F1BE","onPrimaryFixed":"#00210C","primaryFixedDim":"#99D4A3","onPrimaryFixedVariant":"#17512B","secondaryFixed":"#9EF2E5","onSecondaryFixed":"#00201D","secondaryFixedDim":"#82D5C9","onSecondaryFixedVariant":"#005049","tertiaryFixed":"#C8E6FF","onTertiaryFixed":"#001E2E","tertiaryFixedDim":"#93CDF6","onTertiaryFixedVariant":"#004C6D","surfaceDim":"#D5DBDA","surfaceBright":"#F4FBF9","surfaceContainerLowest":"#FFFFFF","surfaceContainerLow":"#EFF5F3","surfaceContainer":"#E9EFED","surfaceContainerHigh":"#E3E9E8","surfaceContainerHighest":"#DDE4E2"},"light-medium-contrast":{"primary":"#00401C","surfaceTint":"#326941","onPrimary":"#FFFFFF","primaryContainer":"#41794F","onPrimaryContainer":"#FFFFFF","secondary":"#003E38","onSecondary":"#FFFFFF","secondaryContainer":"#1C7A70","onSecondaryContainer":"#FFFFFF","tertiary":"#003A55","onTertiary":"#FFFFFF","tertiaryContainer":"#367398","onTertiaryContainer":"#FFFFFF","error":"#5E2329","onError":"#FFFFFF","errorContainer":"#A1585D","onErrorContainer":"#FFFFFF","background":"#F6FBF3","onBackground":"#181D18","surface":"#F4FBF9","onSurface":"#0C1212","surfaceVariant":"#DBE5DE","onSurfaceVariant":"#2F3833","outline":"#4B554F","outlineVariant":"#666F69","shadow":"#000000","scrim":"#000000","inverseSurface":"#2B3231","inverseOnSurface":"#ECF2F0","inversePrimary":"#99D4A3","primaryFixed":"#41794F","onPrimaryFixed":"#FFFFFF","primaryFixedDim":"#276038","onPrimaryFixedVariant":"#FFFFFF","secondaryFixed":"#1C7A70","onSecondaryFixed":"#FFFFFF","secondaryFixedDim":"#006057","onSecondaryFixedVariant":"#FFFFFF","tertiaryFixed":"#367398","onTertiaryFixed":"#FFFFFF","tertiaryFixedDim":"#155A7E","onTertiaryFixedVariant":"#FFFFFF","surfaceDim":"#C1C8C6","surfaceBright":"#F4FBF9","surfaceContainerLowest":"#FFFFFF","surfaceContainerLow":"#EFF5F3","surfaceContainer":"#E3E9E8","surfaceContainerHigh":"#D8DEDD","surfaceContainerHighest":"#CCD3D1"},"light-high-contrast":{"primary":"#003416","surfaceTint":"#326941","onPrimary":"#FFFFFF","primaryContainer":"#1A532D","onPrimaryContainer":"#FFFFFF","secondary":"#00332E","onSecondary":"#FFFFFF","secondaryContainer":"#00534B","onSecondaryContainer":"#FFFFFF","tertiary":"#003046","onTertiary":"#FFFFFF","tertiaryContainer":"#004E70","onTertiaryContainer":"#FFFFFF","error":"#51191F","onError":"#FFFFFF","errorContainer":"#75353A","onErrorContainer":"#FFFFFF","background":"#F6FBF3","onBackground":"#181D18","surface":"#F4FBF9","onSurface":"#000000","surfaceVariant":"#DBE5DE","onSurfaceVariant":"#000000","outline":"#252E29","outlineVariant":"#424B46","shadow":"#000000","scrim":"#000000","inverseSurface":"#2B3231","inverseOnSurface":"#FFFFFF","inversePrimary":"#99D4A3","primaryFixed":"#1A532D","onPrimaryFixed":"#FFFFFF","primaryFixedDim":"#003C1A","onPrimaryFixedVariant":"#FFFFFF","secondaryFixed":"#00534B","onSecondaryFixed":"#FFFFFF","secondaryFixedDim":"#003A34","onSecondaryFixedVariant":"#FFFFFF","tertiaryFixed":"#004E70","onTertiaryFixed":"#FFFFFF","tertiaryFixedDim":"#003650","onTertiaryFixedVariant":"#FFFFFF","surfaceDim":"#B4BAB9","surfaceBright":"#F4FBF9","surfaceContainerLowest":"#FFFFFF","surfaceContainerLow":"#ECF2F0","surfaceContainer":"#DDE4E2","surfaceContainerHigh":"#CFD6D4","surfaceContainerHighest":"#C1C8C6"},"dark":{"primary":"#99D4A3","surfaceTint":"#99D4A3","onPrimary":"#003918","primaryContainer":"#17512B","onPrimaryContainer":"#B4F1BE","secondary":"#82D5C9","onSecondary":"#003732","secondaryContainer":"#005049","onSecondaryContainer":"#9EF2E5","tertiary":"#93CDF6","onTertiary":"#00344C","tertiaryContainer":"#004C6D","onTertiaryContainer":"#C8E6FF","error":"#FFB3B6","onError":"#561D23","errorContainer":"#723338","onErrorContainer":"#FFDADA","background":"#101510","onBackground":"#DFE4DC","surface":"#0E1514","onSurface":"#DDE4E2","surfaceVariant":"#404944","onSurfaceVariant":"#BFC9C2","outline":"#89938D","outlineVariant":"#404944","shadow":"#000000","scrim":"#000000","inverseSurface":"#DDE4E2","inverseOnSurface":"#2B3231","inversePrimary":"#326941","primaryFixed":"#B4F1BE","onPrimaryFixed":"#00210C","primaryFixedDim":"#99D4A3","onPrimaryFixedVariant":"#17512B","secondaryFixed":"#9EF2E5","onSecondaryFixed":"#00201D","secondaryFixedDim":"#82D5C9","onSecondaryFixedVariant":"#005049","tertiaryFixed":"#C8E6FF","onTertiaryFixed":"#001E2E","tertiaryFixedDim":"#93CDF6","onTertiaryFixedVariant":"#004C6D","surfaceDim":"#0E1514","surfaceBright":"#343A3A","surfaceContainerLowest":"#090F0F","surfaceContainerLow":"#161D1C","surfaceContainer":"#1A2120","surfaceContainerHigh":"#252B2A","surfaceContainerHighest":"#2F3635"},"dark-medium-contrast":{"primary":"#AEEBB8","surfaceTint":"#99D4A3","onPrimary":"#002D12","primaryContainer":"#649D70","onPrimaryContainer":"#000000","secondary":"#98ECDF","onSecondary":"#002B27","secondaryContainer":"#4A9E93","onSecondaryContainer":"#000000","tertiary":"#BBE1FF","onTertiary":"#00293D","tertiaryContainer":"#5D97BE","onTertiaryContainer":"#000000","error":"#FFD1D2","onError":"#481219","errorContainer":"#CA7A7F","onErrorContainer":"#000000","background":"#101510","onBackground":"#DFE4DC","surface":"#0E1514","onSurface":"#FFFFFF","surfaceVariant":"#404944","onSurfaceVariant":"#D5DFD7","outline":"#ABB4AD","outlineVariant":"#89938C","shadow":"#000000","scrim":"#000000","inverseSurface":"#DDE4E2","inverseOnSurface":"#252B2A","inversePrimary":"#19522C","primaryFixed":"#B4F1BE","onPrimaryFixed":"#001506","primaryFixedDim":"#99D4A3","onPrimaryFixedVariant":"#00401C","secondaryFixed":"#9EF2E5","onSecondaryFixed":"#001512","secondaryFixedDim":"#82D5C9","onSecondaryFixedVariant":"#003E38","tertiaryFixed":"#C8E6FF","onTertiaryFixed":"#00131F","tertiaryFixedDim":"#93CDF6","onTertiaryFixedVariant":"#003A55","surfaceDim":"#0E1514","surfaceBright":"#3F4645","surfaceContainerLowest":"#040808","surfaceContainerLow":"#181F1E","surfaceContainer":"#232928","surfaceContainerHigh":"#2D3433","surfaceContainerHighest":"#383F3E"},"dark-high-contrast":{"primary":"#C1FFCA","surfaceTint":"#99D4A3","onPrimary":"#000000","primaryContainer":"#95D09F","onPrimaryContainer":"#000F04","secondary":"#AEFFF3","onSecondary":"#000000","secondaryContainer":"#7ED1C5","onSecondaryContainer":"#000E0C","tertiary":"#E3F2FF","onTertiary":"#000000","tertiaryContainer":"#8FC9F2","onTertiaryContainer":"#000D17","error":"#FFECEB","onError":"#000000","errorContainer":"#FFADB1","onErrorContainer":"#210004","background":"#101510","onBackground":"#DFE4DC","surface":"#0E1514","onSurface":"#FFFFFF","surfaceVariant":"#404944","onSurfaceVariant":"#FFFFFF","outline":"#E9F2EB","outlineVariant":"#BBC5BE","shadow":"#000000","scrim":"#000000","inverseSurface":"#DDE4E2","inverseOnSurface":"#000000","inversePrimary":"#19522C","primaryFixed":"#B4F1BE","onPrimaryFixed":"#000000","primaryFixedDim":"#99D4A3","onPrimaryFixedVariant":"#001506","secondaryFixed":"#9EF2E5","onSecondaryFixed":"#000000","secondaryFixedDim":"#82D5C9","onSecondaryFixedVariant":"#001512","tertiaryFixed":"#C8E6FF","onTertiaryFixed":"#000000","tertiaryFixedDim":"#93CDF6","onTertiaryFixedVariant":"#00131F","surfaceDim":"#0E1514","surfaceBright":"#4B5150","surfaceContainerLowest":"#000000","surfaceContainerLow":"#1A2120","surfaceContainer":"#2B3231","surfaceContainerHigh":"#363D3C","surfaceContainerHighest":"#414847"}},"extended":[{"name":"Success","color":"#2FFF2A"},{"name":"Warning","color":"#FA6140"},{"name":"Alert","color":"#E4B819"},{"name":"Miscellaneous","color":"#8479F9"}]};
+
+/* ---------- helpers ---------- */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const kebab = s => s.replace(/[A-Z]/g, m => '-' + m.toLowerCase());
+function lum(hex){ const n=parseInt(hex.slice(1),16); return [n>>16&255,n>>8&255,n&255].map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)}).reduce((a,v,i)=>a+v*[.2126,.7152,.0722][i],0); }
+function ratio(a,b){ const x=lum(a), y=lum(b); return (Math.max(x,y)+.05)/(Math.min(x,y)+.05); }
+function grade(r){ return r>=7?['AAA','aaa']:r>=4.5?['AA','']:r>=3?['AA large','']:['Fail','fail']; }
+
+const SCHEMES = [
+  ['light','Light'],['light-medium-contrast','Light · Medium'],['light-high-contrast','Light · High'],
+  ['dark','Dark'],['dark-medium-contrast','Dark · Medium'],['dark-high-contrast','Dark · High']
+];
+const state = { mode:'light', contrast:'', screen:'homeFeed', device:'mobile', selected:null, highlight:null };
+const schemeKey = () => state.mode + (state.contrast ? '-' + state.contrast + '-contrast' : '');
+const S = k => ANTZ.schemes[k || schemeKey()];
+
+/* ---------- role groups (pair = role it is tested against) ---------- */
+const GROUPS = [
+  ['Primary','circle', [['primary','onPrimary'],['onPrimary','primary'],['primaryContainer','onPrimaryContainer'],['onPrimaryContainer','primaryContainer'],['primaryFixed','onPrimaryFixed'],['primaryFixedDim','onPrimaryFixedVariant'],['onPrimaryFixed','primaryFixed'],['onPrimaryFixedVariant','primaryFixedDim'],['surfaceTint','surface']]],
+  ['Secondary','circle', [['secondary','onSecondary'],['onSecondary','secondary'],['secondaryContainer','onSecondaryContainer'],['onSecondaryContainer','secondaryContainer'],['secondaryFixed','onSecondaryFixed'],['secondaryFixedDim','onSecondaryFixedVariant'],['onSecondaryFixed','secondaryFixed'],['onSecondaryFixedVariant','secondaryFixedDim']]],
+  ['Tertiary','circle', [['tertiary','onTertiary'],['onTertiary','tertiary'],['tertiaryContainer','onTertiaryContainer'],['onTertiaryContainer','tertiaryContainer'],['tertiaryFixed','onTertiaryFixed'],['tertiaryFixedDim','onTertiaryFixedVariant'],['onTertiaryFixed','tertiaryFixed'],['onTertiaryFixedVariant','tertiaryFixedDim']]],
+  ['Error','circle', [['error','onError'],['onError','error'],['errorContainer','onErrorContainer'],['onErrorContainer','errorContainer']]],
+  ['Surface & containers','layers', [['background','onBackground'],['onBackground','background'],['surface','onSurface'],['onSurface','surface'],['surfaceVariant','onSurfaceVariant'],['onSurfaceVariant','surface'],['surfaceDim','onSurface'],['surfaceBright','onSurface'],['surfaceContainerLowest','onSurface'],['surfaceContainerLow','onSurface'],['surfaceContainer','onSurface'],['surfaceContainerHigh','onSurface'],['surfaceContainerHighest','onSurface']]],
+  ['Outline','border_style', [['outline','surface'],['outlineVariant','surface']]],
+  ['Inverse','contrast', [['inverseSurface','inverseOnSurface'],['inverseOnSurface','inverseSurface'],['inversePrimary','inverseSurface']]],
+  ['Utility','tune', [['shadow',null],['scrim',null]]],
+];
+
+const KEY_PAIRS = [['primary','onPrimary'],['primaryContainer','onPrimaryContainer'],['secondary','onSecondary'],['secondaryContainer','onSecondaryContainer'],['tertiary','onTertiary'],['tertiaryContainer','onTertiaryContainer'],['error','onError'],['errorContainer','onErrorContainer'],['background','onBackground'],['surface','onSurface'],['surfaceVariant','onSurfaceVariant'],['surfaceContainerHighest','onSurface'],['inverseSurface','inverseOnSurface'],['inverseSurface','inversePrimary']];
+
+function renderRoles(){
+  const s = S(), q = $('#roleSearch').value.trim().toLowerCase();
+  $('#schemeName').textContent = schemeKey();
+  let html = '';
+  for (const [name, icon, roles] of GROUPS){
+    const list = roles.filter(([r]) => !q || kebab(r).includes(q.replace(/\s+/g,'-')));
+    if (!list.length) continue;
+    html += `<details class="group" open><summary><span class="ms chev" aria-hidden="true">chevron_right</span>${name}<span class="count">${list.length}</span></summary>`;
+    for (const [r,p] of list){
+      const hex = s[r]; let right = '<span class="pair">no pair</span>';
+      if (p){ const v = ratio(hex, s[p]); const [g,c] = grade(v); right = `<div><span class="badge ${c}">${g}</span><div class="ratio">${v.toFixed(2)}:1</div></div>`; }
+      html += `<div class="role ${state.highlight===r?'hl':''}" data-role="${r}" tabindex="0" title="Highlight where ${kebab(r)} is used">
+        <div class="sw" style="background:${hex};color:${p?s[p]:'transparent'}">${p?'Aa':''}</div>
+        <div style="min-width:0"><div class="tk">${kebab(r)}</div><div class="hex">${hex}${p?` · on ${kebab(p)}`:''}</div></div>${right}</div>`;
+    }
+    html += '</details>';
+  }
+  if (!q || 'extended success warning alert miscellaneous'.includes(q)){
+    html += `<details class="group"><summary><span class="ms chev" aria-hidden="true">chevron_right</span>Extended (fixed, not mode-aware)<span class="count">${ANTZ.extended.length}</span></summary>`;
+    for (const e of ANTZ.extended) html += `<div class="role" style="cursor:default"><div class="sw" style="background:${e.color}"></div><div><div class="tk">antz-${e.name.toLowerCase()}</div><div class="hex">${e.color}</div></div><span class="pair">same in all modes</span></div>`;
+    html += '</details>';
+  }
+  $('#roleGroups').innerHTML = html || '<p style="padding:14px;color:#777">No roles match.</p>';
+}
+
+/* ---------- screens: wireframe recreations of the real ANTZ mobile app samples ----------
+   Markup uses data-bg / data-fg / data-bd with M3 role names (or ext:Name for the fixed extended colours).
+   Photos are drawn as hatched placeholders (.img) and are not themed. */
+const T = (w, cls='') => `<span class="wf-text ${cls}" style="width:${w}"></span>`;
+const icon = n => `<span class="ms" aria-hidden="true">${n}</span>`;
+const img = (h, label='photo', extra='') => `<div class="img" style="height:${h}px;${extra}"><span>${icon('image')} ${label}</span></div>`;
+const status = () => `<div class="row statusbar" data-bg="surface" data-fg="onSurface"><b>6:30</b><span style="flex:1"></span>${icon('signal_cellular_alt')}${icon('wifi')}${icon('battery_5_bar')}</div>`;
+const appBar = (title, right='') => `<div class="row" data-bg="surface" data-fg="onSurface" style="padding:10px 14px;gap:12px">${icon('arrow_back')}<b style="font-size:15px;flex:1">${title}</b>${right}</div>`;
+const sitePicker = () => `<div class="row" style="padding:10px 14px;font-weight:600"><span data-fg="primary">${icon('location_on')}</span><span data-fg="onSurface">All sites</span>${icon('expand_more')}</div>`;
+const searchRow = () => `<div class="row" style="padding:0 14px"><div class="field row" data-bg="surfaceContainerLowest" data-bd="outlineVariant" data-fg="onSurfaceVariant" style="flex:1">${icon('search')} Search</div><span data-fg="primary">${icon('view_list')}</span><span data-fg="onSurfaceVariant">${icon('view_agenda')}</span></div>`;
+const listRow = (name, latin, n) => `<div class="row lrow" data-bg="surfaceContainerLowest" data-bd="outlineVariant" data-fg="onSurface"><div class="thumb" data-bg="surfaceVariant" data-fg="onSurfaceVariant">${icon('pets')}</div><div class="col" style="flex:1;gap:2px"><span>${name}</span><i data-fg="onSurfaceVariant" style="font-size:11px">${latin}</i></div><b style="padding-right:12px">${n}</b></div>`;
+const fab = (ic='add') => `<div class="fab" data-bg="primaryContainer" data-fg="onPrimaryContainer">${icon(ic)}</div>`;
+const quickBar = () => `<div class="row floatbar"><span class="pill" data-bg="surfaceContainerHigh" data-fg="onSurface">${icon('apps')}</span><span class="pill" data-bg="secondaryContainer" data-fg="onSecondaryContainer">${icon('chat')}</span></div>`;
+const siteChips = () => `<div class="row" style="padding:8px 14px;overflow:hidden"><span class="chip" data-bg="surfaceContainerHigh" data-bd="surfaceContainerHigh" data-fg="onSurface">${icon('menu')}</span><span class="chip" data-bg="tertiary" data-bd="tertiary" data-fg="onTertiary">All sites</span><span class="chip" data-bg="surfaceContainerHigh" data-bd="surfaceContainerHigh" data-fg="onSurface">Adirampattinam</span><span class="chip" data-bg="surfaceContainerHigh" data-bd="surfaceContainerHigh" data-fg="onSurface">Ammapettai</span></div>`;
+const searchTop = (ph) => `<div class="row" style="padding:10px 14px"><span class="pill" data-bg="secondary" data-fg="onSecondary" style="padding:8px">DA</span><div class="field row" data-bg="surfaceContainerLowest" data-bd="outlineVariant" data-fg="onSurfaceVariant" style="flex:1">${icon('search')} Search "${ph}"</div><span class="pill" data-bg="surfaceContainerLowest" data-fg="onSurface" style="padding:7px">${icon('qr_code_scanner')}</span></div>`;
+const statPair = (bg, fg, numFg, a, b) => `<div class="card row" data-bg="${bg}" data-fg="${fg}" style="justify-content:space-around;text-align:center">${[a,b].map(([n,l])=>`<div class="col" style="gap:2px"><b class="big" data-fg="${numFg}">${n}</b><span style="font-size:11px">${l}</span></div>`).join('')}</div>`;
+const speedDial = (items, under) => `<div class="dial-host">${under}<div class="wash" data-bg="surface"></div><div class="dial col">${items.map(([t,i])=>`<div class="row" style="justify-content:flex-end;gap:10px"><b data-fg="primary" style="font-size:12px">${t}</b><span class="mini" data-bg="surfaceContainerHigh" data-fg="onSurface">${icon(i)}</span></div>`).join('')}<div class="row" style="justify-content:flex-end">${fab('close')}</div></div></div>`;
+
+const carnivoresTop = () => `
+  <div class="hero">${img(190,'hero photo carousel 1/93')}<div class="hero-txt">${icon('arrow_back')}<div style="font-size:11px;margin-top:10px">Order</div><b style="font-size:20px">Carnivores</b><i style="font-size:11px">Carnivora</i></div></div>
+  ${sitePicker()}
+  <div class="row" style="padding:0 14px;align-items:stretch">
+    <div class="card col" data-bg="surfaceContainerLowest" data-fg="onSurface" style="flex:1;gap:4px"><span data-fg="primary" style="font-size:11px;font-weight:600">Current data</span><div class="row" style="justify-content:space-around"><b class="big">3.0K</b><b class="big">45</b></div></div>
+    <div class="card col" data-bg="surfaceContainerLowest" data-fg="onSurface" style="flex:1;gap:4px;align-items:center"><span style="font-size:11px;font-weight:600">Last 6 Months ${icon('filter_list')}</span><b class="big">144</b><span style="font-size:11px">Birth</span></div>
+  </div>
+  <div style="padding:10px 14px 6px" data-fg="onSurface">8 Family under Carnivora</div>
+  ${searchRow()}`;
+
+const medicalTop = (scrolled) => `
+  ${appBar('Medical', `<span data-fg="onSurface" style="font-size:12px">All Sites ${icon('expand_more')}</span>`)}
+  ${scrolled ? '' : `<div style="padding:0 14px">${statPair('inverseSurface','inverseOnSurface','inversePrimary',['2904','Total animals sick'],['160','Species'])}</div>
+  <div class="row" data-fg="onSurface" style="padding:10px 14px;justify-content:space-between;font-size:12px"><span>Yesterday ${icon('expand_more')}</span><span>Active Records ${icon('expand_more')}</span></div>`}
+  <div style="padding:0 14px"><div class="card col" data-bg="secondaryContainer" data-fg="onSecondaryContainer"><b>Medical Records</b>
+    <div class="grid2">${['Medical Records','Symptoms','Clinical Assessment','Prescriptions','Vaccination Records','Deworming Records'].slice(scrolled?2:0).map(t=>`<div class="card col" data-bg="surfaceContainerLowest" data-fg="onSurface" style="gap:4px"><b class="big" style="font-size:16px">0</b><span style="font-size:10.5px">${t}</span></div>`).join('')}</div></div></div>
+  <div class="grid3" style="padding:14px">${['Administer Prescription','Symptoms','Clinical Assessment','Lab','Vaccination','Deworming',...(scrolled?['Hospital Transfer','Prescriptions','Supplements']:[])].map((t,i)=>`<div class="card col tile" data-bg="surfaceContainerLowest" data-fg="onSurface"><span class="ic" data-bg="secondaryContainer" data-fg="onSecondaryContainer">${icon(['medication','sentiment_dissatisfied','stethoscope','science','vaccines','medication_liquid','ambulance','prescriptions','pill'][i])}</span><span style="font-size:10.5px;text-align:center">${t}</span></div>`).join('')}</div>`;
+
+const SCREENS = {
+  homeFeed: { file:'IMG_1600', label:'Home · feed', icon:'home', url:'antzapp://home', html:()=>`
+    <div class="col" data-bg="background" data-fg="onBackground" style="flex:1;gap:0">
+      ${status()}
+      <div class="col" data-bg="surfaceContainerLow" style="gap:8px;padding-bottom:12px;border-radius:0 0 24px 24px">
+        <div class="row" style="padding:8px 14px"><span class="pill" data-bg="secondary" data-fg="onSecondary" style="padding:8px">DA</span><div class="col" style="flex:1;gap:0" data-fg="onSurface"><span style="font-size:11px">Good Evening,</span><b style="font-size:16px" data-fg="tertiary">Designer Antz</b></div><span data-fg="onSurface">${icon('cloud')} 26°</span><span class="pill" data-bg="surfaceContainerLowest" data-fg="onSurface" style="padding:6px">${icon('notifications')}</span></div>
+        ${searchTop('Enclosure').replace('<span class="pill" data-bg="secondary" data-fg="onSecondary" style="padding:8px">DA</span>','')}
+        <div class="row" data-fg="onSurface" style="padding:0 14px;justify-content:space-between"><b>Favourites</b>${icon('star')}</div>
+        <div class="row" style="padding:0 14px;overflow:hidden">${['AAID: 423186','Animal Ear Ta…','AAID: 42822'].map(t=>`<div style="position:relative;flex:0 0 42%">${img(130,'animal')}<b class="ov">${t}</b></div>`).join('')}</div>
+      </div>
+      <div class="row" data-bg="ext:Alert" style="margin:10px 8px;padding:8px 12px;border-radius:10px;font-size:11px;font-weight:600">${icon('warning')} ANIMAL AUDIT SCORE 1% · DK RC 100% · ticker</div>
+      <div class="col" data-bg="surfaceContainer" style="margin:0 8px;padding:10px;border-radius:14px 14px 0 0;flex:1">
+        <div class="card col" data-bg="surfaceContainerLowest" data-fg="onSurface">
+          <span class="chip" data-bg="secondaryContainer" data-bd="secondaryContainer" data-fg="onSecondaryContainer" style="align-self:flex-start">${icon('campaign')} ANNOUNCEMENT</span>
+          <b data-fg="primary" style="font-size:14px">The animal of the day is Flamingo</b>
+          <span data-fg="onSurfaceVariant" style="font-size:11px">NZ · Neeta Zoo With Approval · 21 Sep</span>${T('90%')}${T('70%')}
+          <span data-fg="onSurfaceVariant" style="font-size:11px">${icon('attach_file')} 3 Images, 1 Document, 1 Video, 1 Audio</span>
+          ${img(110,'post image +2')}
+        </div>
+      </div>
+      <div class="row floatbar"><span class="pill" data-bg="surfaceContainerHigh" data-fg="onSurface">Modules ${icon('expand_more')}</span><span class="pill" data-bg="surfaceContainerHigh" data-fg="onSurface">${icon('apps')} Quick Actions</span><span class="pill" data-bg="secondaryContainer" data-fg="onSecondaryContainer">${icon('chat')}</span></div>
+    </div>`,
+    map:[['Header block behind greeting','surfaceContainerLow'],['Avatar','secondary / onSecondary'],['User name','tertiary'],['Search + scan + bell buttons','surfaceContainerLowest / outlineVariant / onSurfaceVariant'],['Audit score ticker','ext:Alert (fixed extended colour)'],['Feed section','surfaceContainer'],['Announcement card','surfaceContainerLowest / onSurface'],['Announcement chip','secondaryContainer / onSecondaryContainer'],['Post title link','primary'],['Floating Modules / Quick Actions pills','surfaceContainerHigh / onSurface'],['Chat FAB','secondaryContainer / onSecondaryContainer'],['Text on photos','scrim (fixed white text)']] },
+
+  homeNotes: { file:'IMG_1601', label:'Home · observation notes', icon:'sticky_note_2', url:'antzapp://home#notes', html:()=>`
+    <div class="col" data-bg="background" data-fg="onBackground" style="flex:1;gap:0">
+      ${status()}${searchTop('Animals')}${siteChips()}
+      <div class="col" data-bg="surfaceContainer" data-fg="onSurface" style="margin:6px 8px;padding:10px;border-radius:14px">
+        <div class="row" style="justify-content:space-between"><b>Observation Notes</b><span style="font-size:12px">View all ${icon('keyboard_double_arrow_right')}</span></div>
+        <div class="row seg-m" data-bg="surfaceContainerHigh">${['All','Low','Moderate','High','Critical'].map((t,i)=>`<span ${i===0?'data-bg="surfaceContainerLowest" data-fg="onSurface"':'data-fg="onSurfaceVariant"'}>${t}</span>`).join('')}</div>
+        <div class="row" style="overflow:hidden;align-items:stretch">${[0,1].map(k=>`<div class="card col" data-bg="surfaceContainerLowest" data-fg="onSurface" style="flex:0 0 80%;padding:0;overflow:hidden">
+          <div style="position:relative">${img(120,'animal photo')}<span class="pill" data-bg="errorContainer" data-fg="onErrorContainer" style="position:absolute;top:6px;right:6px;padding:2px 6px">!!!</span><div class="row" data-bg="surfaceContainerLowest" data-fg="onSurface" style="position:absolute;left:8px;right:8px;bottom:8px;border-radius:10px;padding:6px;font-size:11px">${icon('pets')} AID: 428221</div></div>
+          <div class="col" style="padding:10px;gap:6px"><b data-fg="tertiary">${['Carpentry','Electrical'][k]}</b><span data-fg="onSurfaceVariant" style="font-size:11px">• Nest Box</span><div data-bd="outlineVariant" style="border-top:1px solid;padding-top:6px">${T('40%')}</div><div class="row" data-fg="onSurfaceVariant" style="font-size:11px">SO Sowmya 09 <span style="flex:1"></span>${icon('thumb_up')} 0 ${icon('chat_bubble')} 0</div></div></div>`).join('')}</div>
+      </div>
+      <div class="row" data-fg="onSurface" style="padding:12px 14px 6px;justify-content:space-between"><b>Modules</b><span data-fg="primary">${icon('add')} ${icon('edit')}</span></div>
+      <div style="padding:0 14px;position:relative">${img(110,'Species Management · 325 species · 26,224 animals')}</div>
+      <div class="row" style="justify-content:center;margin-top:-30px;position:relative"><span class="pill" data-bg="inverseSurface" data-fg="inverseOnSurface" style="font-size:11px">${icon('arrow_upward')} Top</span></div>
+      ${quickBar()}
+    </div>`,
+    map:[['Site filter chip, selected','tertiary / onTertiary'],['Site filter chips, unselected','surfaceContainerHigh / onSurface'],['Observation Notes section','surfaceContainer'],['Priority segmented control track / selected','surfaceContainerHigh / surfaceContainerLowest'],['Note card','surfaceContainerLowest / onSurface'],['Note title','tertiary'],['Critical "!!!" badge','errorContainer / onErrorContainer'],['Card dividers','outlineVariant'],['Modules add / edit icons','primary'],['"Top" pill','inverseSurface / inverseOnSurface']] },
+
+  homeModules: { file:'IMG_1602', label:'Home · modules', icon:'apps', url:'antzapp://home#modules', html:()=>`
+    <div class="col" data-bg="background" data-fg="onBackground" style="flex:1;gap:0">
+      ${status()}${searchTop('Site')}${siteChips()}
+      <div class="row" data-fg="onSurface" style="padding:10px 14px 6px;justify-content:space-between"><b>Modules</b><span data-fg="primary">${icon('add')} ${icon('edit')}</span></div>
+      <div class="col" style="padding:0 14px;gap:8px">
+        ${img(100,'Species Management · photo tile')}
+        <div class="card mod" data-bg="primary" data-fg="onPrimary">${icon('pets')}<b>Taxonomic Hierarchy</b></div>
+        <div class="grid2">
+          <div class="card mod" data-bg="primaryContainer" data-fg="onPrimaryContainer">${icon('local_hospital')}<b>Medical</b></div>
+          <div class="card mod" data-bg="tertiaryContainer" data-fg="onTertiaryContainer">${icon('home_work')}<b>Housing</b></div>
+          <div class="card mod" data-bg="tertiary" data-fg="onTertiary">${icon('fence')}<b>Enclosures</b></div>
+          <div class="card mod" data-bg="surfaceVariant" data-fg="onSurfaceVariant">${icon('volunteer_activism')}<b>Administer</b></div>
+        </div>
+        <div class="card col" data-bg="errorContainer" data-fg="onErrorContainer"><b>${icon('schedule')} Pending</b><div class="row card" data-bg="surfaceContainerLowest" data-fg="onSurface" style="justify-content:space-between">Vaccination <b>348</b></div></div>
+      </div>
+      ${quickBar()}
+    </div>`,
+    map:[['Taxonomic Hierarchy tile (today: green gradient)','primary / onPrimary'],['Medical tile','primaryContainer / onPrimaryContainer'],['Housing tile (today: slate gradient)','tertiaryContainer / onTertiaryContainer'],['Enclosures tile','tertiary / onTertiary'],['Administer tile (today: grey-sage)','surfaceVariant / onSurfaceVariant'],['Pending panel (today: peach)','errorContainer / onErrorContainer (or ext:Warning container, see Q3)'],['Pending row','surfaceContainerLowest / onSurface']] },
+
+  collections: { file:'IMG_1603', label:'Collections', icon:'category', url:'antzapp://collections', html:()=>`
+    <div class="col" data-bg="background" data-fg="onBackground" style="flex:1;gap:0">
+      ${status()}${appBar('Collections', `<span data-fg="onSurface">${icon('search')}</span>`).replace('data-bg="surface"','data-bg="background"')}
+      ${sitePicker()}
+      <div style="padding:0 14px"><div class="card col" data-bg="surfaceContainerLowest" data-fg="onSurface" style="padding:0;overflow:hidden;gap:0">
+        <div class="col" data-bg="inverseSurface" data-fg="inverseOnSurface" style="padding:12px;gap:8px"><span>${icon('insights')} Insights</span><div class="row" style="justify-content:space-around;text-align:center"><div class="col" style="gap:0"><b class="huge" data-fg="inversePrimary">325</b>Species</div><div class="col" style="gap:0"><b class="huge" data-fg="inversePrimary">26.2K</b>Population</div></div></div>
+        <div class="col" style="padding:10px 12px;gap:6px"><span style="font-size:11px;font-weight:600" data-fg="tertiary">Last 6 Months ${icon('filter_list')}</span><div class="row" style="justify-content:space-around;text-align:center"><div class="col" style="gap:0"><b class="big" data-fg="tertiary">2226</b>Accession</div><div class="col" style="gap:0"><b class="big" data-fg="tertiary">583</b>Birth</div></div></div>
+      </div></div>
+      <div style="height:12px"></div>${searchRow()}
+      <div class="col" style="padding:12px 14px;gap:8px">${listRow('Gastropods','Gastropoda',7324)}${listRow('Birds','Aves',6526)}${listRow('Mammals','Mammalia',4603)}${listRow('Insects','Insecta',2009)}</div>
+    </div>`,
+    map:[['Page background (today: sage)','background'],['Insights header (today: dark teal)','inverseSurface / inverseOnSurface'],['Insights big numbers (today: bright green)','inversePrimary'],['Insights lower half','surfaceContainerLowest'],['Secondary stats + filter label','tertiary'],['Search field','surfaceContainerLowest / outlineVariant'],['View toggle, active','primary'],['List row','surfaceContainerLowest / outlineVariant / onSurface'],['Row thumbnail + silhouette','surfaceVariant / onSurfaceVariant']] },
+
+  orderList: { file:'IMG_1604', label:'Order detail · list', icon:'view_list', url:'antzapp://taxonomy/order/carnivora', html:()=>`
+    <div class="col" data-bg="background" data-fg="onBackground" style="flex:1;gap:0;position:relative">
+      ${carnivoresTop()}
+      <div class="col" style="padding:12px 14px;gap:8px">${listRow('Felidae','Felidae',1627)}${listRow('Canidae','Canidae',1075)}${listRow('Procyonids','Procyonidae','')}</div>
+      ${fab()}
+    </div>`,
+    map:[['Hero photo + title','scrim gradient, fixed white text (not themed)'],['Location pin','primary'],['Stat cards','surfaceContainerLowest / onSurface'],['"Current data" label','primary'],['Family list rows','surfaceContainerLowest / outlineVariant'],['FAB (today: bright green #36BC69-ish)','primaryContainer / onPrimaryContainer']] },
+
+  orderGrid: { file:'IMG_1605', label:'Order detail · grid', icon:'view_agenda', url:'antzapp://taxonomy/order/carnivora?view=grid', html:()=>`
+    <div class="col" data-bg="background" data-fg="onBackground" style="flex:1;gap:0;position:relative">
+      ${carnivoresTop().replace('data-fg="primary">'+icon('view_list'), 'data-fg="onSurfaceVariant">'+icon('view_list')).replace('data-fg="onSurfaceVariant">'+icon('view_agenda'),'data-fg="primary">'+icon('view_agenda'))}
+      <div style="padding:12px 14px"><div class="card col" data-bg="surfaceContainerLowest" data-bd="outlineVariant" data-fg="onSurface" style="border:1px solid;padding:0;overflow:hidden;gap:0"><div data-bg="surfaceVariant" data-fg="onSurfaceVariant" style="height:150px;display:grid;place-items:center">${icon('pets')}</div><div style="padding:10px">Felidae<br><i data-fg="onSurfaceVariant" style="font-size:11px">Felidae</i></div></div></div>
+      ${fab()}
+    </div>`,
+    map:[['Grid card','surfaceContainerLowest / outlineVariant / onSurface'],['Image placeholder area','surfaceVariant / onSurfaceVariant'],['View toggle, active (grid)','primary'],['Everything else','as Order detail · list']] },
+
+  orderDial: { file:'IMG_1606', label:'Order detail · FAB menu', icon:'more_vert', url:'antzapp://taxonomy/order/carnivora#fab', html:()=>`
+    <div class="col" data-bg="background" data-fg="onBackground" style="flex:1;gap:0;position:relative">
+      ${speedDial([['Collections','pets'],['Home','home']], carnivoresTop())}
+    </div>`,
+    map:[['White wash over page (today ~85% white)','surface at 85% opacity (or scrim 32% per M3)'],['Menu labels','primary'],['Mini action buttons','surfaceContainerHigh / onSurface'],['Close FAB','primaryContainer / onPrimaryContainer']] },
+
+  medical: { file:'IMG_1607', label:'Medical', icon:'medical_services', url:'antzapp://medical', html:()=>`
+    <div class="col" data-bg="surfaceContainerLow" data-fg="onSurface" style="flex:1;gap:0;position:relative">${status()}${medicalTop(false)}${fab()}</div>`,
+    map:[['App bar','surface / onSurface'],['Page background','surfaceContainerLow'],['"Total animals sick" banner (today: navy + green numbers)','inverseSurface / inverseOnSurface + inversePrimary numbers'],['Medical Records block (today: aqua)','secondaryContainer / onSecondaryContainer'],['Record count tiles','surfaceContainerLowest / onSurface'],['Action tiles','surfaceContainerLowest / onSurface'],['Action tile icon circle','secondaryContainer / onSecondaryContainer'],['FAB','primaryContainer / onPrimaryContainer']] },
+
+  medicalScrolled: { file:'IMG_1608', label:'Medical · scrolled', icon:'swipe_up', url:'antzapp://medical#actions', html:()=>`
+    <div class="col" data-bg="surfaceContainerLow" data-fg="onSurface" style="flex:1;gap:0;position:relative">${status()}${medicalTop(true)}${fab()}</div>`,
+    map:[['Scrolled app bar','surface (or surfaceContainer when scrolled, M3 behaviour)'],['Extra tiles: Hospital Transfer, Prescriptions, Supplements','surfaceContainerLowest + secondaryContainer icon circle'],['Everything else','as Medical']] },
+
+  administer: { file:'IMG_1609', label:'Administer', icon:'event_available', url:'antzapp://medical/administer', html:()=>`
+    <div class="col" data-bg="surfaceContainerLow" data-fg="onSurface" style="flex:1;gap:0">
+      ${status()}${appBar('Administer', `<span class="pill" data-bg="primaryContainer" data-fg="onPrimaryContainer" style="padding:5px">${icon('add')}</span><span class="pill" data-bg="surfaceContainerHigh" data-fg="onSurface" style="padding:5px">${icon('search')}</span><span class="pill" data-bg="surfaceContainerHigh" data-fg="onSurface" style="padding:5px">${icon('tune')}</span>`)}
+      <div class="row" data-bg="surface" data-fg="onSurface" style="padding:4px 14px 10px;justify-content:space-between;font-size:12px"><span>Nov 2026 ${icon('arrow_drop_down')} ${icon('calendar_month')}</span><span>All Records ${icon('arrow_drop_down')}</span></div>
+      <div class="row" style="padding:10px 8px">${[['Sun','01'],['Mon','02'],['Tue','03']].map(([d,n],i)=>`<div class="card col" ${i===2?'data-bg="tertiary" data-fg="onTertiary"':'data-bg="surfaceContainerLowest" data-fg="onSurface" data-bd="outlineVariant" style="border:1px solid"'} style="align-items:center;gap:0;padding:6px 14px;font-size:11px">${d}<b style="font-size:15px">${n}</b><span data-bg="error" style="width:5px;height:5px;border-radius:50%"></span></div>`).join('')}</div>
+      <div class="row tabsm" data-bg="surface"><span data-fg="primary" data-bd="primary" style="border-bottom:3px solid">Animal Records - 8</span><span data-fg="onSurfaceVariant">Group Records - 0</span></div>
+      <div class="row" style="padding:10px 8px;align-items:stretch">${['Administered','Skipped','Stopped','Pending'].map((t,i)=>`<div class="card col" ${i===3?'data-bg="secondary" data-fg="onSecondary"':'data-bg="surfaceContainerLowest" data-fg="onSurface"'} style="flex:1;align-items:center;gap:0;padding:8px 4px;font-size:10px"><b style="font-size:15px">${i===3?13:0}</b>${t}</div>`).join('')}</div>
+      <div class="col" style="padding:0 8px;gap:8px">${[['ID','secondary','onSecondary','AAID: 428121','Macaw'],['F','ext:Warning','','AAID: 385238','Louisiana Alligator']].map(([b,bb,bf,id,n])=>`<div class="card col" data-bg="surfaceContainerLowest" data-fg="onSurface">
+        <div class="row" style="align-items:flex-start"><span class="pill" data-bg="${bb}" ${bf?`data-fg="${bf}"`:''} style="padding:2px 6px;font-size:10px;border-radius:5px">${b}</span><div class="thumb" data-bg="surfaceVariant" data-fg="onSurfaceVariant" style="width:70px;height:70px">${icon('pets')}</div><div class="col" style="gap:3px;flex:1"><b data-fg="tertiary">${id}</b><b>${n}</b><i data-fg="onSurfaceVariant" style="font-size:11px">${T('70%')}</i><span style="font-size:11px">Encl: A-3</span></div></div>
+        <div class="row" data-bg="secondaryContainer" data-fg="onSecondaryContainer" style="border-radius:6px;padding:6px 8px;font-size:10.5px;justify-content:space-between">Medicine: 1 <span>Doses: 1</span><span data-fg="error">Pending: 1</span>${icon('expand_more')}</div></div>`).join('')}</div>
+    </div>`,
+    map:[['Header actions: add (tonal) / search / filter','primaryContainer · surfaceContainerHigh'],['Date chip, selected (today: navy)','tertiary / onTertiary'],['Date chips, unselected','surfaceContainerLowest / outlineVariant'],['Has-pending dot','error'],['Tabs, active label + indicator','primary'],['Tabs, inactive','onSurfaceVariant'],['Status tile, active "Pending" (today: cyan)','secondary / onSecondary'],['Record card','surfaceContainerLowest / onSurface'],['"ID" badge (today: cyan)','secondary / onSecondary'],['"F" badge (today: orange)','ext:Warning (fixed extended colour)'],['Dose summary strip','secondaryContainer / onSecondaryContainer'],['"Pending: 1" text','error']] },
+
+  lab: { file:'IMG_1610', label:'Lab requests', icon:'science', url:'antzapp://lab', html:()=>`
+    <div class="col" data-bg="surfaceContainerLow" data-fg="onSurface" style="flex:1;gap:0">
+      ${status()}${appBar('Lab', `<span data-fg="onSurface" style="font-size:12px">${icon('location_on')} All Sites ${icon('expand_more')}</span>`)}
+      <div style="padding:10px 14px"><div class="card row" data-bg="surfaceContainerLowest" style="justify-content:space-around;text-align:center">${[['440','Total Requests','primary'],['1464','Pending Tests','error'],['41','Tests In Progress','ext:Alert'],['155','Completed Tests','secondary']].map(([n,l,c])=>`<div class="col" style="gap:0;font-size:10px" data-fg="onSurfaceVariant"><b class="big" data-fg="${c}">${n}</b>${l}</div>`).join('')}</div></div>
+      <div class="row tabsm" data-bg="surface"><span data-fg="onSurface">My Lab Requests</span><span data-fg="primary" data-bd="primary" style="border-bottom:3px solid">All Lab Requests</span></div>
+      <div style="padding:10px 14px"><div class="field row" data-bg="surfaceContainerHigh" data-bd="surfaceContainerHigh" data-fg="onSurfaceVariant">${icon('search')} Search</div></div>
+      <div data-fg="onSurface" style="padding:0 14px 8px">440 Requests</div>
+      <div class="col" style="padding:0 14px;gap:8px">${[0,1].map(k=>`<div class="card col" data-bg="surfaceContainerLowest" data-fg="onSurface">
+        <div class="row"><span class="pill" data-bg="primaryContainer" data-fg="onPrimaryContainer" style="padding:3px">${icon('science')}</span><b>LT38-0038${3-k*2}</b><span style="flex:1"></span>${icon('chevron_right')}</div>
+        <span data-fg="onSurfaceVariant" style="font-size:11px">Shambhavi K · 24 Sep 2026 · Case ID: MED38-18975</span>
+        <div class="col" data-bg="surfaceContainer" style="border-radius:8px;padding:8px;gap:6px"><span style="font-size:11px">No. of tests: 1</span><div class="row">${[['Pending','error'],['In Progress','ext:Alert'],['Completed','secondary']].map(([t,c])=>`<span class="chip" data-bg="surfaceContainerLowest" data-bd="surfaceContainerLowest" data-fg="onSurface">${t} - <b data-fg="${c}">0</b></span>`).join('')}</div></div>
+        ${k===0?`<div class="row" data-bd="outlineVariant" style="border-top:1px solid;padding-top:8px"><div style="position:relative;width:90px">${img(70,'')}<span class="pill" data-bg="secondary" data-fg="onSecondary" style="position:absolute;top:4px;left:4px;padding:1px 5px;font-size:9px;border-radius:4px">G20</span></div><div class="col" style="gap:2px;font-size:11px"><b data-fg="tertiary">AAID: 424291</b><b>Red Panda</b><i data-fg="onSurfaceVariant">Ailurus fulgens</i>Site: Rose Garden</div></div>`:''}</div>`).join('')}</div>
+    </div>`,
+    map:[['Summary numbers: total / pending / in progress / completed','primary · error · ext:Alert · secondary'],['Summary card','surfaceContainerLowest'],['Tabs, active (today: green)','primary label + indicator'],['Search field (filled style)','surfaceContainerHigh / onSurfaceVariant'],['Request card','surfaceContainerLowest / onSurface'],['Request icon','primaryContainer / onPrimaryContainer'],['Tests summary strip','surfaceContainer'],['Status chips','surfaceContainerLowest; count coloured by status'],['Site badge "G20"','secondary / onSecondary'],['Animal ID link','tertiary']] },
+
+  medicalDial: { file:'IMG_1611', label:'Medical · add menu', icon:'add_circle', url:'antzapp://medical#fab', html:()=>`
+    <div class="col" data-bg="surfaceContainerLow" data-fg="onSurface" style="flex:1;gap:0;position:relative">
+      ${speedDial([['Single medical record','note_add'],['Group medical record','list_alt'],['Batch medical record','playlist_add'],['Group Lab Request','science'],['Direct Administer','add_box'],['Direct Prescription','prescriptions'],['Direct Vaccination','add_box'],['Schedule Vaccination','calendar_month'],['Direct Deworming','add_box'],['Schedule Deworming','calendar_month'],['Direct Supplements','add_box']], status()+medicalTop(true))}
+    </div>`,
+    map:[['Wash over page','surface at 85% opacity (or scrim 32%)'],['11 menu labels','primary'],['Mini action buttons','surfaceContainerHigh / onSurface'],['Close FAB','primaryContainer / onPrimaryContainer'],['Note','11 items is long for a speed dial; M3 suggests max 6, consider a bottom sheet']] },
+};
+
+const EXT = Object.fromEntries(ANTZ.extended.map(e=>[e.name, e.color]));
+function colorOf(key, role){ return role && role.startsWith('ext:') ? EXT[role.slice(4)] : ANTZ.schemes[key][role]; }
+function autoOn(hex){ return lum(hex) > .3 ? '#000000' : '#FFFFFF'; }
+function paint(root, key){
+  const s = ANTZ.schemes[key], on = $('#tglPaint').checked;
+  $$('[data-bg],[data-fg],[data-bd]', root).forEach(el=>{
+    const bg = el.dataset.bg && colorOf(key, el.dataset.bg);
+    el.style.backgroundColor = el.dataset.bg ? (on ? bg : greyFor(el.dataset.bg)) : '';
+    let fg = el.dataset.fg ? colorOf(key, el.dataset.fg) : (el.dataset.bg && el.dataset.bg.startsWith('ext:') ? autoOn(bg) : null);
+    el.style.color = fg ? (on ? fg : '#333') : '';
+    if (el.dataset.bd) el.style.borderColor = on ? colorOf(key, el.dataset.bd) : '#999';
+  });
+  if (root.dataset.bgRoot) root.style.backgroundColor = '';
+}
+function greyFor(role){
+  if (/^(primary|secondary|tertiary|error|inverseSurface|scrim)$|^ext:/.test(role)) return '#6f6f6f';
+  if (/Container$|Fixed/.test(role) && !/surface/i.test(role)) return '#cfcfcf';
+  if (/Highest|High/.test(role)) return '#e2e2e2';
+  return '#f2f2f2';
+}
+function markHighlight(root){
+  $$('.sel', root).forEach(e=>e.classList.remove('sel'));
+  if (state.highlight) $$(`[data-bg="${state.highlight}"],[data-fg="${state.highlight}"],[data-bd="${state.highlight}"]`, root).forEach(e=>e.classList.add('sel'));
+  if (state.selected && root.contains(state.selected)) state.selected.classList.add('sel');
+}
+
+function renderTabs(){
+  $('#tabs').innerHTML = '<span class="co pin">9</span>' + Object.entries(SCREENS).map(([k,v])=>`<button class="thumbbtn" role="tab" aria-selected="${k===state.screen}" data-screen="${k}"><span class="mini-ph">${icon(v.icon)}</span>${v.label}<small>${v.file}.PNG</small></button>`).join('');
+}
+function renderMap(){
+  const sc = SCREENS[state.screen], k = schemeKey();
+  $('#mapFile').textContent = sc.file + '.PNG';
+  $('#mapRows').innerHTML = sc.map.map(([region, spec])=>{
+    const roles = (spec.match(/ext:[A-Za-z]+|\b(?:on|inverse|surface|primary|secondary|tertiary|error|outline|background|scrim)[A-Za-z]*\b/g) || []).filter(r=>r==='scrim'||r.startsWith('ext:')||ANTZ.schemes[k][r]);
+    const uniq = [...new Set(roles)];
+    return `<div class="maprow ${uniq.includes(state.highlight)?'hl':''}" data-roles="${uniq.join(' ')}" tabindex="0"><span>${region}</span><span class="sws">${uniq.map(r=>`<i style="background:${colorOf(k,r)}" title="${r} ${colorOf(k,r)}"></i>`).join('')}</span><span class="tok">${spec.replace(/[A-Za-z]+/g, w=>ANTZ.schemes[k][w]?kebab(w):w)}</span></div>`;
+  }).join('');
+}
+function renderScreen(){
+  const sc = SCREENS[state.screen];
+  const dev = state.device;
+  const d = $('#device'); d.className = 'device ' + (dev==='desktop'?'':dev);
+  $('#urlbar').textContent = sc.url;
+  $('#screenHost').innerHTML = `<div class="scr">${sc.html()}</div>`;
+  paint($('#screenHost'), schemeKey());
+  markHighlight($('#screenHost'));
+  renderMap();
+}
+function renderCompare(){
+  const sc = SCREENS[state.screen];
+  let html = '<span class="co pin">12</span>';
+  for (const [k,label] of SCHEMES){
+    const s = ANTZ.schemes[k];
+    const pairs = KEY_PAIRS;
+    const pass = pairs.filter(([a,b])=>ratio(s[a],s[b])>=4.5).length;
+    html += `<div class="cmp-card" data-scheme="${k}" tabindex="0" title="Open ${label} full size"><div class="cmp-h">${icon(k.startsWith('dark')?'dark_mode':'light_mode')}${label}<span class="sub">${k}</span></div>
+      <div class="cmp-body"><div class="scale"><div class="scr" data-bg="background">${sc.html()}</div></div></div>
+      <div class="cmp-foot">${['primary','secondary','tertiary','error','surface','outline'].map(r=>`<span class="sw" style="width:16px;height:16px;border-radius:4px;background:${s[r]}" title="${r} ${s[r]}"></span>`).join('')}<span style="margin-left:auto">${pass}/${pairs.length} key pairs ≥ 4.5:1</span></div></div>`;
+  }
+  $('#compare').innerHTML = html;
+  $$('#compare .cmp-card').forEach(c=>paint(c, c.dataset.scheme));
+}
+
+function inspect(el){
+  state.selected = el;
+  const k = schemeKey(), s = S();
+  const rows = ['bg','fg','bd'].filter(a=>el.dataset[a]).map(a=>[{bg:'Background',fg:'Text / icon',bd:'Border'}[a], el.dataset[a]]);
+  let pairHtml = '';
+  if (el.dataset.bg && el.dataset.fg && colorOf(k,el.dataset.bg) && colorOf(k,el.dataset.fg)){ const r = ratio(colorOf(k,el.dataset.bg), colorOf(k,el.dataset.fg)); const [g,c]=grade(r); pairHtml = `<div><h3>Contrast (text on background)</h3><span class="badge ${c}">${g}</span> <span style="font-family:var(--mono);font-size:12px">${r.toFixed(2)}:1</span></div>`; }
+  const strip = role => `<div class="mode-strip">${SCHEMES.map(([sk,l])=>`<div style="background:${colorOf(sk,role)};color:${autoOn(colorOf(sk,role))}" title="${sk}: ${colorOf(sk,role)}">${l.replace(' · ','·')}</div>`).join('')}</div>`;
+  $('#insp').innerHTML = `
+    <div><h3>Element</h3><div style="font-size:12.5px">&lt;${el.tagName.toLowerCase()}&gt; in <b>${SCREENS[state.screen].label}</b> · ${k}</div></div>
+    <dl class="kv">${rows.map(([n,r])=>`<dt>${n}</dt><dd><span class="sw" style="display:inline-block;width:12px;height:12px;vertical-align:middle;border-radius:3px;background:${colorOf(k,r)}"></span> ${kebab(r)}<br><span style="color:#777">${colorOf(k,r)}${r.startsWith('ext:')?' (fixed in all modes)':''}</span></dd>`).join('')}</dl>
+    ${pairHtml}
+    ${rows.map(([n,r])=>`<div><h3>${kebab(r)} in all 6 modes</h3>${strip(r)}</div>`).join('')}
+    <div><h3>Use in code</h3><div class="code">${rows.map(([n,r])=>`${{Background:'background',['Text / icon']:'color',Border:'border-color'}[n]}: var(${r.startsWith('ext:')?'--antz-'+r.slice(4).toLowerCase():'--md-sys-color-'+kebab(r)});`).join('\n')}</div></div>
+    <button class="btn" id="clearSel">${icon('close')}Clear selection</button>`;
+  $('#clearSel').onclick = ()=>{ state.selected=null; $('#insp').innerHTML='<div class="empty">Click an element in the preview to inspect it.</div>'; renderScreen(); };
+  markHighlight($('#screenHost'));
+}
+
+function renderAll(){ renderRoles(); renderTabs(); renderScreen(); if (document.body.classList.contains('compare-on')) renderCompare(); if (state.selected && document.contains(state.selected)) inspect(state.selected); }
+
+/* ---------- wiring ---------- */
+function segment(id, attr, key){
+  $('#'+id).addEventListener('click', e=>{
+    const b = e.target.closest('button'); if (!b || b.disabled) return;
+    $$('#'+id+' button').forEach(x=>x.setAttribute('aria-pressed', x===b));
+    state[key] = b.dataset[attr]; state.selected = null; renderAll();
+  });
+}
+segment('segMode','mode','mode'); segment('segContrast','contrast','contrast'); segment('segDevice','device','device');
+$('#tabs').addEventListener('click', e=>{ const b=e.target.closest('.thumbbtn'); if(!b) return; state.screen=b.dataset.screen; state.selected=null; renderAll(); });
+$('#tglCompare').addEventListener('change', e=>{
+  document.body.classList.toggle('compare-on', e.target.checked);
+  $$('#segMode button, #segContrast button').forEach(b=>b.disabled=e.target.checked);
+  renderAll();
+});
+$('#compare').addEventListener('click', e=>{
+  const c = e.target.closest('.cmp-card'); if(!c) return;
+  const [m, ct] = c.dataset.scheme.split('-');
+  state.mode = m; state.contrast = ct || '';
+  $$('#segMode button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.mode===state.mode));
+  $$('#segContrast button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.contrast===state.contrast));
+  $('#tglCompare').checked = false; $('#tglCompare').dispatchEvent(new Event('change'));
+});
+$('#screenHost').addEventListener('click', e=>{ const el = e.target.closest('[data-bg],[data-fg],[data-bd]'); if (el){ e.preventDefault(); inspect(el); } });
+$('#roleGroups').addEventListener('click', e=>{ const r=e.target.closest('.role[data-role]'); if(!r) return; state.highlight = state.highlight===r.dataset.role?null:r.dataset.role; renderRoles(); renderMap(); markHighlight($('#screenHost')); });
+$('#roleGroups').addEventListener('keydown', e=>{ if((e.key==='Enter'||e.key===' ') && e.target.matches('.role')){ e.preventDefault(); e.target.click(); } });
+$('#roleSearch').addEventListener('input', renderRoles);
+$('#mapRows').addEventListener('click', e=>{ const r=e.target.closest('.maprow'); if(!r) return; const first=r.dataset.roles.split(' ').find(x=>x && !x.startsWith('ext:') && x!=='scrim') || r.dataset.roles.split(' ')[0]; state.highlight = state.highlight===first?null:first; renderRoles(); renderMap(); markHighlight($('#screenHost')); });
+$('#mapRows').addEventListener('keydown', e=>{ if((e.key==='Enter'||e.key===' ') && e.target.matches('.maprow')){ e.preventDefault(); e.target.click(); } });
+$('#tglCallouts').addEventListener('change', e=>document.body.classList.toggle('hide-callouts', !e.target.checked));
+$('#tglPaint').addEventListener('change', renderAll);
+$('#btnExport').addEventListener('click', e=>{ const m=$('#menuExport'); const o=m.classList.toggle('open'); e.currentTarget.setAttribute('aria-expanded',o); });
+document.addEventListener('click', e=>{ if(!e.target.closest('.menu-wrap')){ $('#menuExport').classList.remove('open'); $('#btnExport').setAttribute('aria-expanded','false'); } });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') $('#menuExport').classList.remove('open'); });
+
+/* default to OS preference */
+try{
+  if (matchMedia('(prefers-color-scheme: dark)').matches){ state.mode='dark'; $$('#segMode button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.mode==='dark')); }
+  if (matchMedia('(prefers-contrast: more)').matches){ state.contrast='high'; $$('#segContrast button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.contrast==='high')); }
+}catch(_){}
+renderAll();
+/* deep links for review: #compare, #screen=lab, #light / #dark */
+(function(){ const h=location.hash; const m=h.match(/screen=(\w+)/); if(m && SCREENS[m[1]]){ state.screen=m[1]; renderAll(); }
+  if(/compare/.test(h)){ $('#tglCompare').checked=true; $('#tglCompare').dispatchEvent(new Event('change')); } })();
+</script>
+</body>
+</html>
