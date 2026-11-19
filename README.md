@@ -22,6 +22,7 @@ The app reads `ANTZ_colour_library.json` from this folder, so editing the JSON u
 - **Contrast:** an AA/AAA audit of every text and icon pair, checked live.
 - **Inspect drawer:** role list, role mapping per screen, and an element inspector.
 - **Export:** CSS variables, Tailwind v4, JSON and Flutter.
+- **Colour rules and Colour scale:** two top-bar sheets: draft usage rules with live Do/Don't examples, and the whole JSON (key colours, tonal palettes, all 6 schemes, gradients) shown visually, with click-to-copy hex values. Deep links: `#panel=rules`, `#panel=scale`.
 - **Shareable links:** the URL hash holds the full state, for example `#theme=navy-led&compare=themes`.
 
 ## Folder

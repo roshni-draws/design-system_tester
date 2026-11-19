@@ -5,10 +5,10 @@ import type { ScreenDef } from '../screens';
 
 import { auditTheme, type ScreenSpecs } from './themeAudit';
 
-/** The same screen in the same mode, once per preset theme (plus the custom theme when one is active). */
+/** The same screen in the same mode, once per preset theme (plus the custom or Build your own theme when one is active). */
 export function ThemeCompareGrid({ screen, scheme, active, specs, onOpen }: { screen: ScreenDef; scheme: SchemeKey; active: ThemeDef; specs: ScreenSpecs | null; onOpen: (t: ThemeDef) => void }) {
   const S = screen.Component;
-  const themes = active.id === 'custom' ? [...PRESETS, active] : PRESETS;
+  const themes = active.id === 'custom' || active.build ? [...PRESETS, active] : PRESETS;
   return (
     <section className="compare themes" aria-label={`${screen.label} in ${schemeLabel(scheme)}, every theme`}>
       {themes.map((t) => {
@@ -19,16 +19,17 @@ export function ThemeCompareGrid({ screen, scheme, active, specs, onOpen }: { sc
           <button key={t.id} type="button" className={`cmp-card${t.id === active.id ? ' on' : ''}`} onClick={() => onOpen(t)} aria-label={`Preview ${t.name}`}>
             <span className="cmp-h">
               {t.name}
-              <span className="sub">{sourcesLine(t.spec)}</span>
+              <span className="sub">{sourcesLine(t.spec, t)}</span>
             </span>
             <span className="cmp-body" aria-hidden="true">
-              <span className="cmp-scale screen-host" data-scheme={scheme} data-screen={screen.id} style={themeVars(s)}><S /></span>
+              {/* cmp-preset: Build your own part colours never apply to the other themes' cards */}
+              <span className={`cmp-scale screen-host${t.build ? '' : ' cmp-preset'}`} data-scheme={scheme} data-screen={screen.id} style={themeVars(s)}><S /></span>
             </span>
             <span className="cmp-foot">
               {(['primary', 'secondaryContainer', 'tertiary', 'surfaceContainerHigh', 'onSurface'] as const).map((r) => (
                 <i key={r} className="mini-sw" style={{ background: s[r] }} title={`${r} ${s[r]}`} />
               ))}
-              <span className="pass">{fails === null ? 'Checking…' : fails ? `${fails} below AA on this screen` : 'All text passes AA'}</span>
+              <span className="pass">{t.build ? 'Part colours are not contrast-checked' : fails === null ? 'Checking…' : fails ? `${fails} below AA on this screen` : 'All text passes AA'}</span>
             </span>
           </button>
         );

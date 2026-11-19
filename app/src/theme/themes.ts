@@ -10,6 +10,7 @@
  */
 import { DynamicScheme, Hct, MaterialDynamicColors, SchemeFidelity, SchemeTonalSpot, SchemeVibrant, TonalPalette, argbFromHex, hexFromArgb } from '@material/material-color-utilities';
 import { contrast } from './contrast';
+import { greyColors } from './build';
 import { BASE_ROLES, EXT_ROLES, LIBRARY_COLORS, LIBRARY_THEME, SCHEME_KEYS, library, type ActiveTheme, type Colors, type Role, type SchemeKey } from './library';
 
 export const KEY_COLOURS = [
@@ -43,7 +44,8 @@ export type SlotId = (typeof SLOTS)[number]['id'];
 export type Pins = Partial<Record<SlotId, number>>;
 export type ThemeSpec = Record<SlotId, KeyId> & { style: StyleId; pins?: Pins };
 
-export interface ThemeDef { id: string; name: string; spec: ThemeSpec; library?: boolean }
+/** build: the "Build your own" theme (grey base plus per-part colours, see build.ts); its spec is unused. */
+export interface ThemeDef { id: string; name: string; spec: ThemeSpec; library?: boolean; build?: boolean }
 
 export const LIBRARY_SPEC: ThemeSpec = { p: 'green', s: 'aqua', t: 'navy', n: 'grey', nv: 'sage', style: 'fidelity' };
 const spec = (p: KeyId, s: KeyId, t: KeyId, style: StyleId = 'fidelity', n: KeyId = 'grey', nv: KeyId = 'sage'): ThemeSpec => ({ p, s, t, n, nv, style });
@@ -63,6 +65,9 @@ export const PRESETS: ThemeDef[] = [
   { id: 'vivid-aqua', name: 'Vivid aqua', spec: spec('aqua', 'navy', 'green', 'vibrant', 'aqua', 'navy') },
 ];
 export const presetById = (id: string) => PRESETS.find((t) => t.id === id);
+
+/** "Build your own": every screen in neutral grey, then any colour on each part. Not limited to the ANTZ palette. */
+export const BUILD_THEME: ThemeDef = { id: 'build', name: 'Build your own', spec: LIBRARY_SPEC, build: true };
 
 /**
  * Palette chroma per style, always relative to the picked key colour, so every pick stays visible.
@@ -233,11 +238,16 @@ export function pinContrast(s: ThemeSpec, slot: SlotId): { ratio: number; scheme
 }
 
 export function colorsOf(t: ThemeDef): Colors {
+  if (t.build) return greyColors();
   return t.library ? LIBRARY_COLORS : generateColors(t.spec);
 }
 
 export function metaOf(t: ThemeDef): ActiveTheme {
   if (t.library) return LIBRARY_THEME;
+  if (t.build) {
+    const g = greyColors().light;
+    return { id: t.id, name: t.name, library: false, style: 'per-part colours on a neutral grey base', sources: { primary: g.primary, secondary: g.secondary, tertiary: g.tertiary, neutral: g.surface, neutralVariant: g.outline } };
+  }
   const h = (id: KeyId) => keyById(id).hex;
   return {
     id: t.id, name: t.name, library: false,
@@ -258,12 +268,13 @@ export function customTheme(s: ThemeSpec): ThemeDef {
 
 /** URL form: #theme=<preset id>, or #theme=custom&p=navy&s=green&t=aqua&n=grey&nv=sage&style=vibrant */
 export function themeToHash(t: ThemeDef): string[] {
-  if (t.id !== 'custom') return [`theme=${t.id}`];
+  if (t.id !== 'custom') return [`theme=${t.id}`]; // includes theme=build; App adds the part colours
   return ['theme=custom', ...SLOTS.map((x) => `${x.id}=${t.spec[x.id]}`), `style=${t.spec.style}`, ...pinList(t.spec).map(([k, v]) => `${k}t=${v}`)];
 }
 
 export function themeFromParams(q: Record<string, string | undefined>): ThemeDef | null {
   if (!q.theme) return null;
+  if (q.theme === 'build') return BUILD_THEME;
   if (q.theme !== 'custom') return presetById(q.theme) ?? null;
   const s = { ...LIBRARY_SPEC };
   for (const x of SLOTS) { const v = q[x.id]; if (isKeyId(v)) s[x.id] = v; }
@@ -279,7 +290,8 @@ export function themeFromParams(q: Record<string, string | undefined>): ThemeDef
 }
 
 /** "Green, aqua, navy": the primary, secondary and tertiary sources in words. */
-export function sourcesLine(spec: ThemeSpec) {
+export function sourcesLine(spec: ThemeSpec, t?: ThemeDef) {
+  if (t?.build) return 'Your colours on a neutral grey base';
   return `${keyById(spec.p).name}, ${keyById(spec.s).name.toLowerCase()}, ${keyById(spec.t).name.toLowerCase()}`;
 }
 

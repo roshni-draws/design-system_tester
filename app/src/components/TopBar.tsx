@@ -1,7 +1,8 @@
-import type { KeyboardEvent } from 'react';
+import { useState, type KeyboardEvent } from 'react';
 import { ACTIVE, library } from '../theme/library';
 import { download, exportCss, exportFlutter, exportJson, exportTailwind, type ExportFile } from '../theme/exporters';
 import { Ms } from './Segmented';
+import { ThemeFileDialog, type ThemeFileState } from './ThemeFileDialog';
 import { usePopover } from './usePopover';
 
 export type Mode = 'light' | 'dark';
@@ -15,12 +16,15 @@ const VIEWS: { value: View; label: string; icon: string }[] = [
   { value: 'modes', label: 'All 6 modes', icon: 'grid_view' },
   { value: 'themes', label: 'All themes', icon: 'view_comfy' },
 ];
-const EXPORTS: { icon: string; title: string; make: () => ExportFile }[] = [
+/** The single-theme formats, for presets only (shared with the side panel's Export section). */
+export const EXPORTS: { icon: string; title: string; make: () => ExportFile }[] = [
   { icon: 'css', title: 'CSS variables', make: exportCss },
   { icon: 'air', title: 'Tailwind v4', make: exportTailwind },
   { icon: 'data_object', title: 'JSON', make: exportJson },
   { icon: 'flutter', title: 'Flutter', make: exportFlutter },
 ];
+
+export const FORMATS_UNAVAILABLE = 'CSS, Tailwind, JSON and Flutter are not available for Build your own yet';
 
 /** Arrow-key movement between the items of an open menu. */
 function menuKeys(e: KeyboardEvent<HTMLDivElement>) {
@@ -30,9 +34,23 @@ function menuKeys(e: KeyboardEvent<HTMLDivElement>) {
   if (e.key === 'ArrowUp') { e.preventDefault(); items[(i - 1 + items.length) % items.length]?.focus(); }
 }
 
-function LayoutMenu({ view, onView }: { view: View; onView: (v: View) => void }) {
+function LayoutMenu({ view, onView, themeFile }: { view: View; onView: (v: View) => void; themeFile?: ThemeFileState }) {
   const p = usePopover();
+  const [naming, setNaming] = useState(false);
   const done = () => { p.setOpen(false); p.trigger.current?.focus(); };
+  const building = !!themeFile?.theme.build;
+  // The ANTZ theme file comes first (the primary option) when fonts are built or the colours are your own.
+  const fileFirst = building || themeFile?.fontMode === 'build';
+  const fileItem = themeFile && (
+    <button key="antz-theme" type="button" role="menuitem" onClick={() => { p.setOpen(false); setNaming(true); }}>
+      <Ms n="deployed_code" />ANTZ theme file (.json)
+    </button>
+  );
+  const formats = !building && EXPORTS.map((x) => (
+    <button key={x.title} type="button" role="menuitem" onClick={() => { download(x.make()); done(); }}>
+      <Ms n={x.icon} />{x.title}
+    </button>
+  ));
   return (
     <div className="pop-wrap" ref={p.wrap}>
       <button ref={p.trigger} type="button" className="icon-btn" aria-haspopup="menu" aria-expanded={p.open} aria-label="Layout and export" title="Layout and export" onClick={() => p.setOpen((o) => !o)}>
@@ -46,14 +64,16 @@ function LayoutMenu({ view, onView }: { view: View; onView: (v: View) => void })
               <Ms n={v.icon} />{v.label}{view === v.value && <Ms n="check" />}
             </button>
           ))}
-          <p className="menu-h">Export the active theme, 6 modes</p>
-          {EXPORTS.map((x) => (
-            <button key={x.title} type="button" role="menuitem" onClick={() => { download(x.make()); done(); }}>
-              <Ms n={x.icon} />{x.title}
-            </button>
-          ))}
+          {fileFirst && <p className="menu-h">Export colours and fonts</p>}
+          {fileFirst && fileItem}
+          {building
+            ? <p className="menu-h">{FORMATS_UNAVAILABLE}</p>
+            : <p className="menu-h">Export the active theme, 6 modes</p>}
+          {formats}
+          {!fileFirst && fileItem}
         </div>
       )}
+      {naming && themeFile && <ThemeFileDialog state={themeFile} returnTo={p.trigger.current} onClose={() => setNaming(false)} />}
     </div>
   );
 }
@@ -75,7 +95,9 @@ function About() {
   );
 }
 
-export function TopBar({ mode, view, inspecting, onMode, onView, onInspect }: { mode: Mode; view: View; inspecting: boolean; onMode: (m: Mode) => void; onView: (v: View) => void; onInspect: () => void }) {
+export type Panel = 'rules' | 'scale';
+
+export function TopBar({ mode, view, inspecting, building = false, fontBuilding = false, panel, themeFile, onMode, onView, onInspect, onPanel }: { mode: Mode; view: View; inspecting: boolean; building?: boolean; fontBuilding?: boolean; panel: Panel | null; themeFile?: ThemeFileState; onMode: (m: Mode) => void; onView: (v: View) => void; onInspect: () => void; onPanel: (p: Panel) => void }) {
   const dark = mode === 'dark';
   return (
     <header className="topbar">
@@ -84,10 +106,17 @@ export function TopBar({ mode, view, inspecting, onMode, onView, onInspect }: { 
         ANTZ Theme Tester
       </span>
       <span className="spacer" />
-      <button type="button" className="icon-btn" aria-pressed={inspecting} aria-label="Inspect roles and contrast" title="Inspect" onClick={onInspect}>
+      <button type="button" id="btn-rules" className="icon-btn" aria-haspopup="dialog" aria-expanded={panel === 'rules'} aria-label="Colour rules" title="Colour rules" onClick={() => onPanel('rules')}>
+        <Ms n="menu_book" size={20} />
+      </button>
+      <button type="button" id="btn-scale" className="icon-btn" aria-haspopup="dialog" aria-expanded={panel === 'scale'} aria-label="Colour scale" title="Colour scale" onClick={() => onPanel('scale')}>
+        <Ms n="palette" size={20} />
+      </button>
+      <span className="tb-div" aria-hidden="true" />
+      <button type="button" className="icon-btn" aria-pressed={inspecting} aria-label="Inspect roles and contrast" title={building || fontBuilding ? `Inspect is off while you build your own ${building && fontBuilding ? 'theme and font family' : building ? 'theme' : 'font family'}: clicks on the phones pick ${building && fontBuilding ? 'parts or text styles' : building ? 'parts' : 'text styles'}` : 'Inspect'} disabled={building || fontBuilding} onClick={onInspect}>
         <Ms n="frame_inspect" size={20} />
       </button>
-      <LayoutMenu view={view} onView={onView} />
+      <LayoutMenu view={view} onView={onView} themeFile={themeFile} />
       <button type="button" className="icon-btn" aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'} title={dark ? 'Light mode' : 'Dark mode'} onClick={() => onMode(dark ? 'light' : 'dark')}>
         <Ms n={dark ? 'light_mode' : 'dark_mode'} size={20} />
       </button>

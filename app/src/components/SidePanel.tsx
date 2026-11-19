@@ -1,13 +1,19 @@
-import { useState, type KeyboardEvent } from 'react';
+import { useState, type ComponentProps, type KeyboardEvent } from 'react';
 import { readableOn } from '../theme/contrast';
 import { library, schemeLabel, type Colors, type Role, type SchemeKey } from '../theme/library';
-import { KEY_COLOURS, PIN_ROLES, PRESETS, SLOTS, STYLES, colorsOf, defaultTone, keyById, pinContrast, presetById, shadesOf, themeForSpec, type Pins, type SlotId, type StyleId, type ThemeDef, type ThemeSpec } from '../theme/themes';
-import { Ms } from './Segmented';
+import { BUILD_THEME, KEY_COLOURS, PIN_ROLES, PRESETS, SLOTS, STYLES, colorsOf, defaultTone, keyById, pinContrast, presetById, shadesOf, themeForSpec, type Pins, type SlotId, type StyleId, type ThemeDef, type ThemeSpec } from '../theme/themes';
+import { Ms, Segmented } from './Segmented';
 import { auditTheme, type ScreenSpecs } from './themeAudit';
 import type { Fills } from './inspect';
 import { gradientCss, type Gradient } from '../theme/gradients';
 import { labelOf, type GFill } from '../theme/gfill';
 import { usePopover } from './usePopover';
+import { BuildPanel } from './BuildPanel';
+import { greyColors } from '../theme/build';
+import { FontPanel } from './FontPanel';
+import type { FontMode } from '../theme/fonts';
+import { ExportSection } from './ExportSection';
+import type { ThemeFileState } from './ThemeFileDialog';
 
 const HELP: Record<SlotId, string> = {
   p: 'Buttons, links and active states',
@@ -30,6 +36,72 @@ function ThemeTile({ theme, scheme, active, onPick }: { theme: ThemeDef; scheme:
         <span className="tile-name">{theme.name}</span>
       </button>
     </li>
+  );
+}
+
+/** The "Build your own" tile: grey stripes and a brush, since the theme starts grey. */
+function BuildTile({ scheme, active, onPick }: { scheme: SchemeKey; active: boolean; onPick: () => void }) {
+  const g = greyColors()[scheme];
+  return (
+    <li>
+      <button type="button" className="tile" aria-pressed={active} onClick={onPick} title="Build your own: start from grey and colour each part of the screens with any colour">
+        <span className="tile-chip build" aria-hidden="true">
+          {(['surfaceContainerHigh', 'surfaceContainerLowest', 'outline'] as const).map((r) => <i key={r} style={{ background: g[r] }} />)}
+          <span className="tile-brush"><Ms n={active ? 'check' : 'brush'} size={20} /></span>
+        </span>
+        <span className="tile-name">Build your own</span>
+      </button>
+    </li>
+  );
+}
+
+/** Font option tile: "Aa" in Inter for the template, mixed faces and a pen for building your own. */
+function FontTile({ build, active, onPick }: { build: boolean; active: boolean; onPick: () => void }) {
+  return (
+    <li>
+      <button type="button" className="tile" aria-pressed={active} onClick={onPick}
+        title={build ? 'Build your own font family: pick any Google Font for each text style' : 'Template: Inter only, exactly as designed'}>
+        <span className={`tile-chip font${build ? ' build' : ''}`} aria-hidden="true">
+          {build ? <span className="tile-aa mixed"><span>A</span><span>a</span></span> : <span className="tile-aa">Aa</span>}
+          {active && <span className="tile-check"><Ms n="check" size={16} /></span>}
+          {build && !active && <span className="tile-pen"><Ms n="edit" size={14} /></span>}
+        </span>
+        <span className="tile-name">{build ? 'Build your own font family' : 'Template'}</span>
+      </button>
+    </li>
+  );
+}
+
+export interface FontSectionProps {
+  mode: FontMode; onMode: (m: FontMode) => void;
+  /** Which build editor the side panel shows (and phone clicks follow) when colours and fonts are both being built. */
+  editing: 'colour' | 'font'; onEditing: (e: 'colour' | 'font') => void;
+  panel: ComponentProps<typeof FontPanel>;
+}
+
+const EDITORS = [
+  { value: 'colour' as const, label: <><Ms n="palette" size={16} />Colours</> },
+  { value: 'font' as const, label: <><Ms n="text_fields" size={16} />Fonts</> },
+];
+
+/** The Font section: Template or Build your own, independent of the colour theme. */
+function FontSection({ font, colourBuild, showPanel }: { font: FontSectionProps; colourBuild: boolean; showPanel: boolean }) {
+  const both = colourBuild && font.mode === 'build';
+  return (
+    <>
+      <h2>Font</h2>
+      <ul className="tiles" aria-label="Font">
+        <FontTile build={false} active={font.mode === 'template'} onPick={() => font.onMode('template')} />
+        <FontTile build active={font.mode === 'build'} onPick={() => font.onMode('build')} />
+      </ul>
+      {both && (
+        <div className="bd-head ed-switch">
+          <span className="bd-head-lbl">Building</span>
+          <Segmented label="Editor in the panel and for clicks on the phones" value={font.editing} options={EDITORS} onChange={font.onEditing} />
+        </div>
+      )}
+      {font.mode === 'build' && showPanel && <FontPanel {...font.panel} />}
+    </>
   );
 }
 
@@ -145,9 +217,14 @@ function AaLine({ colors, specs, grad }: { colors: Colors; specs: ScreenSpecs | 
   return <p className="muted aa-line" title={a.detail.join('\n')}>{a.fails} text {a.fails === 1 ? 'pair falls' : 'pairs fall'} below WCAG AA on these screens in at least one mode.</p>;
 }
 
-export function SidePanel({ theme, scheme, specs, onTheme, gradients, fills, resolved, onFills }: {
+export function SidePanel({ theme, scheme, specs, onTheme, gradients, fills, resolved, onFills, build, font, themeFile }: {
   theme: ThemeDef; scheme: SchemeKey; specs: ScreenSpecs | null; onTheme: (t: ThemeDef) => void;
   gradients: Gradient[]; fills: GFill[]; resolved: Fills | null; onFills: (f: GFill[]) => void;
+  /** Props for the "Build your own" panel; shown instead of the ANTZ colour sections while that theme is active. */
+  build: ComponentProps<typeof BuildPanel>;
+  font: FontSectionProps;
+  /** What the ANTZ theme file holds; drives the Export theme section at the bottom. */
+  themeFile: ThemeFileState;
 }) {
   const buttons = fills.find((f) => f.scope === 'b');
   const others = fills.filter((f) => f.scope !== 'b');
@@ -161,8 +238,29 @@ export function SidePanel({ theme, scheme, specs, onTheme, gradients, fills, res
     try { await navigator.clipboard.writeText(location.href); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch { /* clipboard blocked */ }
   };
   const ext = library.extendedColors;
+  const tileList = (
+    <ul className="tiles" aria-label="Themes">
+      {tiles.map((t) => <ThemeTile key={t.id} theme={t} scheme={scheme} active={t.id === theme.id} onPick={() => onTheme(t)} />)}
+      <BuildTile scheme={scheme} active={!!theme.build} onPick={() => onTheme(BUILD_THEME)} />
+    </ul>
+  );
+  if (theme.build) {
+    return (
+      <aside className="side" aria-label="Theme and font">
+        <p className="intro">
+          Build your own theme with any colours, not only the ANTZ palette. Your colours stay for this session and are kept in the link, so you can <button type="button" className="link" onClick={copy}>{copied ? 'link copied' : 'share it'}</button>.
+        </p>
+        <h2>Theme</h2>
+        {tileList}
+        {/* With both builders on, only one editor shows at a time; the switch under the Font tiles picks it. */}
+        <FontSection font={font} colourBuild showPanel={font.mode === 'build' && font.editing === 'font'} />
+        {!(font.mode === 'build' && font.editing === 'font') && <BuildPanel {...build} />}
+        <ExportSection state={themeFile} />
+      </aside>
+    );
+  }
   return (
-    <aside className="side" aria-label="Theme">
+    <aside className="side" aria-label="Theme and font">
       <p className="intro">
         Try arrangements of the ANTZ palette on real app screens. Every theme is built only from the ANTZ key colours, and error, success, warning, caution and info stay fixed.
       </p>
@@ -171,10 +269,10 @@ export function SidePanel({ theme, scheme, specs, onTheme, gradients, fills, res
       </p>
 
       <h2>Theme</h2>
-      <ul className="tiles" aria-label="Preset themes">
-        {tiles.map((t) => <ThemeTile key={t.id} theme={t} scheme={scheme} active={t.id === theme.id} onPick={() => onTheme(t)} />)}
-      </ul>
+      {tileList}
       <AaLine colors={colorsOf(theme)} specs={specs} grad={resolved} />
+
+      <FontSection font={font} colourBuild={false} showPanel />
 
       <h2>Core colors</h2>
       <ul className="rows">
@@ -233,6 +331,8 @@ export function SidePanel({ theme, scheme, specs, onTheme, gradients, fills, res
         <button type="button" className="text-btn" onClick={copy}><Ms n={copied ? 'check' : 'link'} />{copied ? 'Link copied' : 'Copy link'}</button>
         {!theme.library && <button type="button" className="text-btn" onClick={() => onTheme(presetById('antz-library')!)}><Ms n="restart_alt" />Reset to ANTZ Library</button>}
       </div>
+
+      <ExportSection state={themeFile} />
     </aside>
   );
 }
